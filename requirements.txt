@@ -13,6 +13,8 @@ mss
 playwright
 # Smart Home
 python-kasa
+# Document Generation
+python-pptx
 # Utilities
 python-dotenv
 aiohttp>=3.9.0
