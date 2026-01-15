@@ -64,15 +64,28 @@ pytest tests/test_file.py::test_name  # Run single test function
 Lexi/
 ├── backend/           # Python backend
 │   ├── server.py      # FastAPI + Socket.IO server
-│   ├── lexi.py        # Gemini Live API integration (main AI loop)
-│   ├── *_agent.py     # Skill agents (web, kasa, cad, printer)
-│   └── tools.py       # Tool definitions for Gemini
+│   ├── lexi.py        # Gemini Live API integration
+│   ├── memory_manager.py  # User memory (SQLite)
+│   ├── voice/         # Voice pipeline
+│   │   ├── stt.py     # Swedish speech-to-text (Whisper)
+│   │   └── tts.py     # English text-to-speech (Edge TTS)
+│   ├── web_agent.py   # Browser automation
+│   └── kasa_agent.py  # Smart home
 ├── src/               # React frontend
-│   ├── App.jsx        # Main component (~1700 lines)
+│   ├── App.jsx        # Main component
 │   └── components/    # UI components
+├── skills/            # Modular skills framework
+│   ├── base_skill.py  # BaseSkill abstract class
+│   ├── skill_dispatcher.py  # Intent routing
+│   ├── powerpoint_skill.py  # PPT generation
+│   ├── report_skill.py      # Report generation
+│   ├── linkedin_skill.py    # LinkedIn posts
+│   ├── web_skill.py         # Web automation
+│   └── kasa_skill.py        # Smart home
+├── memory/            # User memory data
+│   └── schema.sql     # SQLite schema
 ├── electron/          # Electron main process
-│   └── main.js        # Window management, IPC
-└── skills/            # Modular skills (planned)
+└── requirements.txt   # Python dependencies
 ```
 
 ---
@@ -147,20 +160,25 @@ useEffect(() => {
 | `user_input` | F→B | Text messages from user |
 | `video_frame` | F→B | Camera frames (JPEG blob) |
 
-### Adding New Skills (Future)
+### Adding New Skills
 
 ```python
-# backend/skills/example_skill.py
+# skills/my_skill.py
 from skills.base_skill import BaseSkill, SkillContext, SkillResult
 
-class ExampleSkill(BaseSkill):
-    name = "example"
-    triggers = ["do example", "run example"]
+class MySkill(BaseSkill):
+    name = "my_skill"
+    display_name = "Min Skill"
+    description = "Beskrivning för LLM"
+    triggers = ["kör min skill", "run my skill"]
     
     async def execute(self, context: SkillContext) -> SkillResult:
-        # Implementation
-        return SkillResult(success=True, data={...})
+        # context.user_input - användarens text
+        # context.on_status - callback för statusuppdatering
+        return SkillResult(success=True, data={"result": "Done"})
 ```
+
+Skills auto-upptäcks från `skills/` vid namnmönstret `*_skill.py`.
 
 ---
 
@@ -180,8 +198,9 @@ class ExampleSkill(BaseSkill):
 
 - `backend/lexi.py` - Core AI loop, Gemini integration
 - `backend/server.py` - All Socket.IO event handlers
-- `src/App.jsx` - Main React component (large file)
-- `electron/main.js` - Electron window + Python process management
+- `backend/memory_manager.py` - User memory persistence
+- `skills/base_skill.py` - Skill framework
+- `src/App.jsx` - Main React component
 - `script.md` - Source of truth for product vision
 
 ---
