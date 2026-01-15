@@ -1,126 +1,63 @@
-# Lexi
+# Lexi Prime (v4) - Executive Sparring Partner
 
-**Personlig AI-assistent för macOS**
+Lexi Prime is a local-first, privacy-focused AI assistant customized for Executive & Strategic workflows.
+She acts as a "Sparring Partner" rather than a passive chatbot—proactively offering tools for leadership, communication, and strategy.
 
-Lexi är en installerbar desktop-applikation som kombinerar röst, text och kamera för att utföra riktigt arbete – inte bara prata.
+## 🚀 Key Features (Vertical Slice A0)
+*   **Native & Secure:** Protected by macOS TouchID/FaceID via Electron Bridge. API keys stored in System Keychain.
+*   **Identity-Aware:** Knows your leadership style, values, and goals (via "The Interview").
+*   **Local-First Memory:** Uses `SQLite` (Structured) and `ChromaDB` (Vector) for fast, private recall.
+*   **Executive Tools:**
+    *   **LinkedIn Drafter:** Turns raw thoughts into viral, high-level posts.
+    *   **Report Generator:** Creates rigorous PDF reports from chat context.
 
----
+## 🛠️ Architecture
+*   **Backend:** Python (FastAPI, SQLModel, google-genai).
+*   **Frontend:** React (Vite, Tailwind, Lucide).
+*   **Desktop:** Electron (IPC Bridge for Native Auth).
+*   **Testing:** Pytest + Async Fixtures.
 
-## ✨ Funktioner
+## ⚡ Quick Start
 
-- 🎙️ **Röstinteraktion** – Prata på svenska, få svar på engelska
-- � **Textgränssnitt** – All skriven kommunikation på svenska
-- 📷 **Kameraåtkomst** – Objektidentifiering och visuell kontext
-- 🔌 **Smart Home** – Kasa-integration för smarta enheter
-- 🌐 **Webbagent** – Automatiserad webbläsare (Playwright)
+### 1. Prerequisites
+*   Python 3.9+
+*   Node.js 18+
+*   macOS (for TouchID/FaceID features)
 
-### Planerade Skills (Core)
-- 📊 PowerPoint-skapare (.pptx)
-- 📄 Rapport-sammanställare
-- 💼 LinkedIn-assistent
-
----
-
-## 🚀 Snabbstart
-
-### Förutsättningar
-- macOS
-- Python 3.11+
-- Node.js 18+
-- Gemini API-nyckel
-
-### Installation
-
+### 2. Setup
 ```bash
-# Klona och installera
-git clone https://github.com/DanielWarg/Lexi.git
-cd Lexi
-
-# Frontend
-npm install
-
-# Backend
+# 1. Backend
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-playwright install chromium
+./setup_keys.py # (Or set GEMINI_API_KEY env var)
 
-# Konfigurera API-nyckel
-echo "GEMINI_API_KEY=din_nyckel_här" > .env
+# 2. Frontend
+cd frontend
+npm install
+npm run build
+cd ..
+
+# 3. Run Dev Mode
+# Terminal 1:
+uvicorn backend.main:app --reload
+
+# Terminal 2:
+npm start # (Runs Electron wrapper + Frontend)
 ```
 
-### Kör utvecklingsmiljö
-
+## 🧪 Testing
 ```bash
-npm run dev
+# Run backend test suite
+.venv/bin/pytest backend/tests/
 ```
 
-Detta startar:
-- Vite dev server (port 5173)
-- Electron-app
-- Python backend (port 8000)
+## 📂 Project Structure
+*   `backend/core/` - Config, Security, Database
+*   `backend/tools/` - Modular Tool Registry (Add new tools here)
+*   `backend/models/` - SQLModel Definitions (User, Memory)
+*   `frontend/src/` - React UI
+*   `desktop/` - Electron Main Process
 
----
-
-## 🏗️ Arkitektur
-
-```
-┌─────────────────────────────────────────┐
-│           Electron Shell                │
-│  ┌─────────────────────────────────┐   │
-│  │     React UI (Svenska)          │   │
-│  │  - Chat, Kamera, Inställningar  │   │
-│  └─────────────────────────────────┘   │
-└─────────────────────────────────────────┘
-              ↕ Socket.IO
-┌─────────────────────────────────────────┐
-│     Python Backend (FastAPI)            │
-│  ┌──────────┐  ┌──────────┐            │
-│  │ lexi.py  │  │ Skills   │            │
-│  │ Gemini   │  │ Web/Kasa │            │
-│  └──────────┘  └──────────┘            │
-└─────────────────────────────────────────┘
-```
-
----
-
-## � Projektstruktur
-
-```
-Lexi/
-├── backend/           # Python-server
-│   ├── server.py      # FastAPI + Socket.IO
-│   ├── lexi.py        # Gemini Live API
-│   ├── web_agent.py   # Webbautomation
-│   └── kasa_agent.py  # Smart home
-├── src/               # React-frontend
-│   ├── App.jsx        # Huvudkomponent
-│   └── components/    # UI-komponenter
-├── electron/          # Electron main process
-└── skills/            # Moduler (planerat)
-```
-
----
-
-## 🔧 Bygga för distribution
-
-```bash
-npm run build:mac
-```
-
-Skapar en `.dmg`-fil i `dist/`-mappen.
-
----
-
-## 🌐 Språkpolicy
-
-| Kontext | Språk |
-|---------|-------|
-| UI/Text | Svenska 🇸🇪 |
-| Röst-output | Engelska 🇬🇧 |
-| Röst-input | Svenska 🇸🇪 |
-| Kod/Kommentarer | Engelska 🇬🇧 |
-
----
-
-## 📄 Licens
-
-MIT
+## 📜 License
+Private & Confidential.

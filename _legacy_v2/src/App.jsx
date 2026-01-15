@@ -68,10 +68,10 @@ function App() {
     const [currentTime, setCurrentTime] = useState(new Date()); // Live clock
 
 
-    // RESTORED STATE
-    const [aiAudioData, setAiAudioData] = useState(new Array(64).fill(0));
-    const [micAudioData, setMicAudioData] = useState(new Array(32).fill(0));
-    const [fps, setFps] = useState(0);
+    // RESTORED STATE - OPTIMIZED: Using Refs for high-freq data to avoid re-renders
+    const aiAudioDataRef = useRef(new Array(64).fill(0));
+    const micAudioDataRef = useRef(new Array(32).fill(0));
+    // const [fps, setFps] = useState(0); // Removing FPS state to save re-renders
 
     // Device states - microphones, speakers, webcams
     const [micDevices, setMicDevices] = useState([]);
@@ -336,7 +336,8 @@ function App() {
             }
         });
         socket.on('audio_data', (data) => {
-            setAiAudioData(data.data);
+            // setAiAudioData(data.data); // OLD
+            aiAudioDataRef.current = data.data; // NEW: Zero re-renders
         });
 
         // Gemini API key status (fail-closed indicator)
@@ -711,7 +712,8 @@ function App() {
                 if (!analyserRef.current) return;
                 const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
                 analyserRef.current.getByteFrequencyData(dataArray);
-                setMicAudioData(Array.from(dataArray));
+                // setMicAudioData(Array.from(dataArray)); // OLD
+                micAudioDataRef.current = Array.from(dataArray); // NEW
                 animationFrameRef.current = requestAnimationFrame(updateMicData);
             };
 
@@ -1040,7 +1042,7 @@ function App() {
         const now = performance.now();
         frameCountRef.current++;
         if (now - lastFrameTimeRef.current >= 1000) {
-            setFps(frameCountRef.current);
+            // setFps(frameCountRef.current); // Disable FPS state update
             frameCountRef.current = 0;
             lastFrameTimeRef.current = now;
         }
@@ -1343,7 +1345,8 @@ function App() {
     };
 
     // Calculate Average Audio Amplitude for Background Pulse
-    const audioAmp = aiAudioData.reduce((a, b) => a + b, 0) / aiAudioData.length / 255;
+    // const audioAmp = aiAudioData.reduce((a, b) => a + b, 0) / aiAudioData.length / 255;
+    // Moved to internal visualizer logic
 
     const toggleKasaWindow = () => {
         if (!showKasaWindow) {
@@ -1419,12 +1422,12 @@ function App() {
                     <div className="text-[10px] text-cyan-700 border border-cyan-900 px-1 rounded">
                         V2.0.0
                     </div>
-                    {/* FPS Counter */}
-                    {isVideoOn && (
+                    {/* FPS Counter REMOVED for perf */}
+                    {/* {isVideoOn && (
                         <div className="text-[10px] text-green-500 border border-green-900 px-1 rounded ml-2">
                             FPS: {fps}
                         </div>
-                    )}
+                    )} */}
                     {/* Connected Printers Count */}
                     {printerCount > 0 && (
                         <div className="flex items-center gap-1.5 text-[10px] text-green-400 border border-green-500/30 bg-green-500/10 px-2 py-0.5 rounded ml-2">
@@ -1453,7 +1456,7 @@ function App() {
 
                 {/* Top Visualizer (User Mic) */}
                 <div className="flex-1 flex justify-center mx-4">
-                    <TopAudioBar audioData={micAudioData} />
+                    <TopAudioBar audioDataRef={micAudioDataRef} />
                 </div>
 
                 <div className="flex items-center gap-2 pr-2" style={{ WebkitAppRegion: 'no-drag' }}>
@@ -1495,9 +1498,8 @@ function App() {
                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none mix-blend-overlay z-10"></div>
                     <div className="relative z-20">
                         <Visualizer
-                            audioData={aiAudioData}
+                            audioDataRef={aiAudioDataRef}
                             isListening={isConnected && !isMuted}
-                            intensity={audioAmp}
                             width={elementSizes.visualizer.w}
                             height={elementSizes.visualizer.h}
                         />

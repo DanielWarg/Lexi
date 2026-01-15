@@ -1,0 +1,25 @@
+fastapi
+uvicorn
+python-socketio
+python-multipart
+# Google GenAI SDK - ONLY for Gemini 2.5 Native Audio / Live API
+google-genai
+# Computer Vision & Audio (LOCAL)
+opencv-python
+pyaudio
+pillow
+mss
+# Face & Hand tracking (LOCAL - MediaPipe)
+mediapipe
+# Browser Automation (LOCAL)
+playwright
+# Smart Home (LOCAL)
+python-kasa
+# Document Generation (LOCAL)
+python-pptx
+# Utilities
+python-dotenv
+aiohttp>=3.9.0
+# Python 3.9 Backports
+taskgroup
+exceptiongroup

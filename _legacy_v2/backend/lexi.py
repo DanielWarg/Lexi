@@ -194,7 +194,7 @@ class AudioLoop:
                 self.on_cad_status(status_info)
         
         self.cad_agent = None # CadAgent(on_thought=handle_cad_thought, on_status=handle_cad_status)
-        self.web_agent = None # WebAgent() - WebAgent seemed ok in imports but let's be safe if it fails too? No, keep web agent if possible.
+        self.web_agent = WebAgent() # Re-enabled!
         # Check imports for WebAgent. Step 1003 shows 'run_web_agent' dict, but not import.
         # Let's check imports in lexi.py again to be sure.
         self.kasa_agent = kasa_agent if kasa_agent else KasaAgent()
@@ -1158,6 +1158,15 @@ class AudioLoop:
 
                     tg.create_task(self.receive_audio())
                     tg.create_task(self.play_audio())
+                    
+                    # Keep-Alive / Heartbeat Monitor
+                    # Logs connection health and ensures we don't stall silently.
+                    async def heartbeat():
+                        while True:
+                            await asyncio.sleep(30)
+                            print(f"[LEXI DEBUG] [HEARTBEAT] Connection active. Audio Queue: {self.audio_in_queue.qsize()} items.")
+                    
+                    tg.create_task(heartbeat())
 
                     # Handle Startup vs Reconnect Logic
                     if not is_reconnect:
@@ -1181,7 +1190,7 @@ class AudioLoop:
                             text = entry.get('text', '')
                             context_msg += f"[{sender}]: {text}\n"
                         
-                        context_msg += "\nPlease acknowledge the reconnection to the user (e.g. 'I lost connection for a moment, but I'm back...') and resume what you were doing."
+                        context_msg += "\n(System: Connection restored. If you were speaking, resume. If silent, REMAIN SILENT. Do NOT announce the reconnection.)"
                         
                         print(f"[LEXI DEBUG] [RECONNECT] Sending restoration context to model...")
                         await self.session.send(input=context_msg, end_of_turn=True)

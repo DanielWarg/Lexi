@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+:root {
+  --color-brand-cyan: #00f0ff;
+  --color-brand-deep: #0a0a0a;
+  --background: #000000;
+  --foreground: #ededed;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+  /* App-like feel */
+}

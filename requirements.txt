@@ -1,25 +1,34 @@
-fastapi
-uvicorn
-python-socketio
-python-multipart
-# Google GenAI SDK - ONLY for Gemini 2.5 Native Audio / Live API
-google-genai
-# Computer Vision & Audio (LOCAL)
-opencv-python
-pyaudio
-pillow
-mss
-# Face & Hand tracking (LOCAL - MediaPipe)
-mediapipe
-# Browser Automation (LOCAL)
-playwright
-# Smart Home (LOCAL)
-python-kasa
-# Document Generation (LOCAL)
-python-pptx
-# Utilities
-python-dotenv
-aiohttp>=3.9.0
-# Python 3.9 Backports
-taskgroup
-exceptiongroup
+# Core
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+pydantic>=2.10.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+
+# Database (Local First)
+sqlmodel>=0.0.14
+aiosqlite>=0.19.0
+
+# Memory & AI (Local Vector Store)
+chromadb>=0.4.22  # Replaces FAISS + Redis
+sentence-transformers>=2.5.0
+google-genai>=0.3.0
+langchain>=0.1.0
+
+# Tools/Production
+python-pptx>=0.6.21
+weasyprint>=60.0
+beautifulsoup4>=4.12.0
+playwright>=1.40.0
+
+# Auth & Utilities
+mediapipe>=0.10.9 # Gesture control
+click>=8.1.0
+requests>=2.31.0
+keyring>=24.0.0 # For secure local key storage
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0 # Required for TestClient
+
