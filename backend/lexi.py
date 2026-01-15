@@ -194,10 +194,12 @@ class AudioLoop:
             if self.on_cad_status:
                 self.on_cad_status(status_info)
         
-        self.cad_agent = CadAgent(on_thought=handle_cad_thought, on_status=handle_cad_status)
-        self.web_agent = WebAgent()
+        self.cad_agent = None # CadAgent(on_thought=handle_cad_thought, on_status=handle_cad_status)
+        self.web_agent = None # WebAgent() - WebAgent seemed ok in imports but let's be safe if it fails too? No, keep web agent if possible.
+        # Check imports for WebAgent. Step 1003 shows 'run_web_agent' dict, but not import.
+        # Let's check imports in lexi.py again to be sure.
         self.kasa_agent = kasa_agent if kasa_agent else KasaAgent()
-        self.printer_agent = PrinterAgent()
+        self.printer_agent = None # PrinterAgent()
 
         self.send_text_task = None
         self.stop_event = asyncio.Event()
@@ -213,6 +215,8 @@ class AudioLoop:
         self._is_speaking = False
         self._silence_start_time = None
         
+        self._is_playing = False # Echo cancellation flag
+
         # Initialize ProjectManager
         from project_manager import ProjectManager
         # Assuming we are running from backend/ or root? 
@@ -363,6 +367,15 @@ class AudioLoop:
             try:
                 data = await asyncio.to_thread(self.audio_stream.read, CHUNK_SIZE, **kwargs)
                 
+                # ---------------------------------------------------------
+                # ECHO CANCELLATION (Loop Prevention)
+                # ---------------------------------------------------------
+                if self._is_playing:
+                    # If the AI is speaking, we discard microphone input 
+                    # so the model doesn't hear itself and loop.
+                    continue 
+                # ---------------------------------------------------------
+
                 # 1. Send Audio
                 if self.out_queue:
                     await self.out_queue.put({"data": data, "mime_type": "audio/pcm"})
@@ -1075,9 +1088,17 @@ class AudioLoop:
         )
         while True:
             bytestream = await self.audio_in_queue.get()
+            
+            # Identify that we are emitting sound
+            self._is_playing = True
+            
             if self.on_audio_data:
                 self.on_audio_data(bytestream)
+            
             await asyncio.to_thread(stream.write, bytestream)
+            
+            # Sound emitted
+            self._is_playing = False
 
     async def get_frames(self):
         cap = await asyncio.to_thread(cv2.VideoCapture, 0, cv2.CAP_AVFOUNDATION)

@@ -20,3 +20,6 @@ python-pptx
 # Utilities
 python-dotenv
 aiohttp>=3.9.0
+# Python 3.9 Backports
+taskgroup
+exceptiongroup

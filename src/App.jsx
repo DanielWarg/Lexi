@@ -494,21 +494,24 @@ function App() {
         // Kasa Devices
         socket.on('kasa_devices', (devices) => {
             console.log("Kasa Devices:", devices);
-            setKasaDevices(devices);
+            setKasaDevices(Array.isArray(devices) ? devices : []);
         });
 
         socket.on('kasa_update', (data) => {
-            setKasaDevices(prev => prev.map(d => {
-                if (d.ip === data.ip) {
-                    // Update only fields that are not null/undefined
-                    return {
-                        ...d,
-                        is_on: data.is_on !== null ? data.is_on : d.is_on,
-                        brightness: data.brightness !== null ? data.brightness : d.brightness
-                    };
-                }
-                return d;
-            }));
+            setKasaDevices(prev => {
+                if (!Array.isArray(prev)) return [];
+                return prev.map(d => {
+                    if (!d) return d;
+                    if (d.ip === data.ip) {
+                        return {
+                            ...d,
+                            is_on: data.is_on !== null ? data.is_on : d.is_on,
+                            brightness: data.brightness !== null ? data.brightness : d.brightness
+                        };
+                    }
+                    return d;
+                });
+            });
         });
 
         socket.on('project_update', (data) => {
@@ -589,6 +592,10 @@ function App() {
 
         // Initialize Hand Landmarker
         const initHandLandmarker = async () => {
+            if (typeof FilesetResolver === 'undefined' || typeof HandLandmarker === 'undefined') {
+                console.warn("Mediapipe not loaded yet. Skipping hand tracking init.");
+                return;
+            }
             try {
                 console.log("Initializing HandLandmarker...");
 
@@ -1434,10 +1441,10 @@ function App() {
                     )}
                     {/* Gemini API Key Status Indicator */}
                     <div className={`flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded ml-2 ${geminiKeyLoaded === null
-                            ? 'text-gray-400 border border-gray-500/30 bg-gray-500/10'
-                            : geminiKeyLoaded
-                                ? 'text-green-400 border border-green-500/30 bg-green-500/10'
-                                : 'text-red-400 border border-red-500/30 bg-red-500/10'
+                        ? 'text-gray-400 border border-gray-500/30 bg-gray-500/10'
+                        : geminiKeyLoaded
+                            ? 'text-green-400 border border-green-500/30 bg-green-500/10'
+                            : 'text-red-400 border border-red-500/30 bg-red-500/10'
                         }`}>
                         <span>{geminiKeyLoaded === null ? '⏳' : geminiKeyLoaded ? '✅' : '❌'}</span>
                         <span>Gemini</span>
