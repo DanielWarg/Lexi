@@ -3,17 +3,14 @@ import io from 'socket.io-client';
 
 import Visualizer from './components/Visualizer';
 import TopAudioBar from './components/TopAudioBar';
-import CadWindow from './components/CadWindow';
 import BrowserWindow from './components/BrowserWindow';
 import ChatModule from './components/ChatModule';
 import ToolsModule from './components/ToolsModule';
-import { Mic, MicOff, Settings, X, Minus, Power, Video, VideoOff, Layout, Hand, Printer, Clock } from 'lucide-react';
-import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
+import { Mic, MicOff, Settings, X, Minus, Power, Video, VideoOff, Layout, Clock } from 'lucide-react';
 // MemoryPrompt removed - memory is now actively saved to project
 import ConfirmationPopup from './components/ConfirmationPopup';
 import AuthLock from './components/AuthLock';
 import KasaWindow from './components/KasaWindow';
-import PrinterWindow from './components/PrinterWindow';
 import SettingsWindow from './components/SettingsWindow';
 
 
