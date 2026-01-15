@@ -1,7 +1,7 @@
 {
-  "name": "ada-v2",
+  "name": "lexi",
   "version": "1.0.0",
-  "description": "A.D.A V2 - AI Assistant",
+  "description": "Lexi - Personlig AI-assistent för macOS",
   "main": "electron/main.js",
   "scripts": {
     "dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && npx electron .\"",
