@@ -129,12 +129,11 @@ config = types.LiveConnectConfig(
     # We switch these from [] to {} to enable them with default settings
     output_audio_transcription={}, 
     input_audio_transcription={},
-    system_instruction="Your name is Lexi, a personal AI assistant. "
-        "You have a warm, professional, and helpful personality. "
-        "You speak English but understand Swedish. "
-        "When the user speaks Swedish, understand them and respond in English voice. "
-        "You help with productivity tasks like creating presentations, writing reports, and managing smart home devices. "
-        "Keep responses concise and actionable.",
+    system_instruction="Du heter Lexi, en personlig AI-assistent. "
+        "Du har en varm, professionell och hjälpsam personlighet. "
+        "Du talar och skriver ALLTID på svenska. "
+        "Du hjälper till med produktivitetsuppgifter som att skapa presentationer, skriva rapporter och hantera smarta hemenheter. "
+        "Håll svaren koncisa och handlingsinriktade.",
     tools=tools,
     speech_config=types.SpeechConfig(
         voice_config=types.VoiceConfig(
