@@ -15,6 +15,9 @@ playwright
 python-kasa
 # Document Generation
 python-pptx
+# Voice Pipeline (Language Policy: Swedish STT, English TTS)
+edge-tts
+openai-whisper
 # Utilities
 python-dotenv
 aiohttp>=3.9.0
