@@ -1,0 +1,4 @@
+# User data - not tracked in git
+*.db
+*.sqlite
+*.sqlite3
