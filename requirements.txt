@@ -2,22 +2,21 @@ fastapi
 uvicorn
 python-socketio
 python-multipart
-# Google GenAI SDK (v1beta)
+# Google GenAI SDK - ONLY for Gemini 2.5 Native Audio / Live API
 google-genai
-# Computer Vision & Audio
+# Computer Vision & Audio (LOCAL)
 opencv-python
 pyaudio
 pillow
 mss
-# Browser Automation
+# Face & Hand tracking (LOCAL - MediaPipe)
+mediapipe
+# Browser Automation (LOCAL)
 playwright
-# Smart Home
+# Smart Home (LOCAL)
 python-kasa
-# Document Generation
+# Document Generation (LOCAL)
 python-pptx
-# Voice Pipeline (Language Policy: Swedish STT, English TTS)
-edge-tts
-openai-whisper
 # Utilities
 python-dotenv
 aiohttp>=3.9.0

@@ -1,50 +1,54 @@
 """
 Lexi Memory Manager
 ===================
-Manages user memory, preferences, and context.
+Manages user memory, preferences, and context using local JSON files.
 
-Features:
-- Stores summarized memories (not raw conversations)
-- Version history for undo
-- Categories: work_style, preferences, facts, context
-- Importance ranking
-- Automatic summarization
+NO external services - completely local/offline.
+
+Memory structure:
+- ~/.lexi/memory.json - Main memory file
+- ~/.lexi/preferences.json - User preferences
 """
 
-import sqlite3
 import asyncio
 import json
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict, Any
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 
 
 @dataclass
 class MemoryEntry:
     """A single memory entry."""
-    id: Optional[int] = None
-    content: str = ""
-    category: str = "general"
-    importance: int = 1
-    source: str = "conversation"
-    version: int = 1
-    is_active: bool = True
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    id: str
+    content: str
+    category: str = "general"  # work_style, preferences, facts, context
+    importance: int = 1  # 1-5
+    created_at: str = ""
+    updated_at: str = ""
+    
+    def __post_init__(self):
+        if not self.created_at:
+            self.created_at = datetime.now().isoformat()
+        if not self.updated_at:
+            self.updated_at = self.created_at
 
 
 @dataclass
-class UserPreference:
-    """A user preference setting."""
-    key: str
-    value: Any
-    category: str = "general"
+class MemoryStore:
+    """Complete memory store structure."""
+    version: int = 1
+    entries: List[Dict] = field(default_factory=list)
+    preferences: Dict[str, Any] = field(default_factory=dict)
+    last_updated: str = ""
 
 
 class MemoryManager:
     """
     Manages Lexi's memory of the user.
+    
+    Uses local JSON files - NO external services.
     
     Memory is:
     - Summarized (not raw dialog)
@@ -53,213 +57,153 @@ class MemoryManager:
     - Categorized (for efficient retrieval)
     """
     
-    def __init__(self, db_path: str = None):
-        if db_path is None:
-            # Default to user's home directory
-            data_dir = Path.home() / ".lexi" / "data"
-            data_dir.mkdir(parents=True, exist_ok=True)
-            db_path = str(data_dir / "memory.db")
+    def __init__(self, data_dir: str = None):
+        if data_dir is None:
+            self.data_dir = Path.home() / ".lexi"
+        else:
+            self.data_dir = Path(data_dir)
         
-        self.db_path = db_path
-        self._conn: Optional[sqlite3.Connection] = None
+        self.memory_file = self.data_dir / "memory.json"
+        self.preferences_file = self.data_dir / "preferences.json"
+        self._store: Optional[MemoryStore] = None
         self._initialized = False
     
     async def initialize(self):
-        """Initialize the database connection and schema."""
+        """Initialize the memory system."""
         if self._initialized:
             return
         
-        # Run in thread pool to not block
-        await asyncio.to_thread(self._init_db)
-        self._initialized = True
-        print(f"[MEMORY] Initialized at {self.db_path}")
-    
-    def _init_db(self):
-        """Initialize database (sync, called from thread pool)."""
-        self._conn = sqlite3.connect(self.db_path)
-        self._conn.row_factory = sqlite3.Row
+        # Create directory if needed
+        self.data_dir.mkdir(parents=True, exist_ok=True)
         
-        # Load and execute schema
-        schema_path = Path(__file__).parent.parent / "memory" / "schema.sql"
-        if schema_path.exists():
-            with open(schema_path) as f:
-                self._conn.executescript(f.read())
-            self._conn.commit()
+        # Load or create memory store
+        await asyncio.to_thread(self._load_store)
+        self._initialized = True
+        print(f"[MEMORY] Initialized at {self.data_dir}")
+    
+    def _load_store(self):
+        """Load memory store from file."""
+        if self.memory_file.exists():
+            try:
+                with open(self.memory_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    self._store = MemoryStore(
+                        version=data.get('version', 1),
+                        entries=data.get('entries', []),
+                        preferences=data.get('preferences', {}),
+                        last_updated=data.get('last_updated', '')
+                    )
+            except (json.JSONDecodeError, KeyError) as e:
+                print(f"[MEMORY] Error loading memory file: {e}")
+                self._store = MemoryStore()
+        else:
+            self._store = MemoryStore()
+    
+    def _save_store(self):
+        """Save memory store to file."""
+        if self._store is None:
+            return
+        
+        self._store.last_updated = datetime.now().isoformat()
+        
+        data = {
+            'version': self._store.version,
+            'entries': self._store.entries,
+            'preferences': self._store.preferences,
+            'last_updated': self._store.last_updated
+        }
+        
+        with open(self.memory_file, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
     
     async def add_memory(
         self,
         content: str,
         category: str = "general",
-        importance: int = 1,
-        source: str = "conversation"
-    ) -> int:
+        importance: int = 1
+    ) -> str:
         """
         Add a new memory entry.
         
-        Args:
-            content: The memory content (should be summarized)
-            category: Category for organization
-            importance: 1-5, higher = more important
-            source: Where the memory came from
-            
-        Returns:
-            ID of the new memory entry
+        Returns the ID of the new entry.
         """
         await self.initialize()
         
-        def _insert():
-            cursor = self._conn.execute(
-                """
-                INSERT INTO memory_entries (content, category, importance, source)
-                VALUES (?, ?, ?, ?)
-                """,
-                (content, category, min(max(importance, 1), 5), source)
-            )
-            self._conn.commit()
-            return cursor.lastrowid
+        entry_id = f"mem_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
         
-        return await asyncio.to_thread(_insert)
+        entry = MemoryEntry(
+            id=entry_id,
+            content=content,
+            category=category,
+            importance=min(max(importance, 1), 5)
+        )
+        
+        self._store.entries.append(asdict(entry))
+        await asyncio.to_thread(self._save_store)
+        
+        return entry_id
     
     async def get_memories(
         self,
         category: str = None,
         limit: int = 20,
         min_importance: int = 1
-    ) -> List[MemoryEntry]:
+    ) -> List[Dict]:
         """Get memory entries, optionally filtered."""
         await self.initialize()
         
-        def _query():
-            query = "SELECT * FROM memory_entries WHERE is_active = TRUE"
-            params = []
-            
-            if category:
-                query += " AND category = ?"
-                params.append(category)
-            
-            if min_importance > 1:
-                query += " AND importance >= ?"
-                params.append(min_importance)
-            
-            query += " ORDER BY importance DESC, updated_at DESC LIMIT ?"
-            params.append(limit)
-            
-            cursor = self._conn.execute(query, params)
-            rows = cursor.fetchall()
-            
-            return [
-                MemoryEntry(
-                    id=row["id"],
-                    content=row["content"],
-                    category=row["category"],
-                    importance=row["importance"],
-                    source=row["source"],
-                    version=row["version"],
-                    is_active=bool(row["is_active"]),
-                    created_at=row["created_at"],
-                    updated_at=row["updated_at"]
-                )
-                for row in rows
-            ]
+        entries = self._store.entries
         
-        return await asyncio.to_thread(_query)
+        # Filter by category
+        if category:
+            entries = [e for e in entries if e.get('category') == category]
+        
+        # Filter by importance
+        if min_importance > 1:
+            entries = [e for e in entries if e.get('importance', 1) >= min_importance]
+        
+        # Sort by importance (desc) then by updated_at (desc)
+        entries = sorted(
+            entries,
+            key=lambda x: (-x.get('importance', 1), x.get('updated_at', '')),
+            reverse=False
+        )
+        
+        return entries[:limit]
     
-    async def update_memory(
-        self,
-        memory_id: int,
-        content: str,
-        save_version: bool = True
-    ):
-        """Update a memory entry, optionally saving the old version."""
+    async def update_memory(self, memory_id: str, content: str):
+        """Update a memory entry."""
         await self.initialize()
         
-        def _update():
-            if save_version:
-                # Save current version first
-                cursor = self._conn.execute(
-                    "SELECT content, version FROM memory_entries WHERE id = ?",
-                    (memory_id,)
-                )
-                row = cursor.fetchone()
-                if row:
-                    self._conn.execute(
-                        """
-                        INSERT INTO memory_versions (memory_id, content, version)
-                        VALUES (?, ?, ?)
-                        """,
-                        (memory_id, row["content"], row["version"])
-                    )
-            
-            # Update with new content
-            self._conn.execute(
-                """
-                UPDATE memory_entries 
-                SET content = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-                """,
-                (content, memory_id)
-            )
-            self._conn.commit()
+        for entry in self._store.entries:
+            if entry.get('id') == memory_id:
+                entry['content'] = content
+                entry['updated_at'] = datetime.now().isoformat()
+                break
         
-        await asyncio.to_thread(_update)
+        await asyncio.to_thread(self._save_store)
     
-    async def delete_memory(self, memory_id: int, soft: bool = True):
-        """Delete a memory entry (soft delete by default)."""
+    async def delete_memory(self, memory_id: str):
+        """Delete a memory entry."""
         await self.initialize()
         
-        def _delete():
-            if soft:
-                self._conn.execute(
-                    "UPDATE memory_entries SET is_active = FALSE WHERE id = ?",
-                    (memory_id,)
-                )
-            else:
-                self._conn.execute(
-                    "DELETE FROM memory_entries WHERE id = ?",
-                    (memory_id,)
-                )
-            self._conn.commit()
+        self._store.entries = [
+            e for e in self._store.entries if e.get('id') != memory_id
+        ]
         
-        await asyncio.to_thread(_delete)
+        await asyncio.to_thread(self._save_store)
     
-    async def set_preference(self, key: str, value: Any, category: str = "general"):
+    async def set_preference(self, key: str, value: Any):
         """Set a user preference."""
         await self.initialize()
         
-        def _set():
-            value_json = json.dumps(value) if not isinstance(value, str) else value
-            self._conn.execute(
-                """
-                INSERT INTO user_preferences (key, value, category)
-                VALUES (?, ?, ?)
-                ON CONFLICT(key) DO UPDATE SET 
-                    value = excluded.value,
-                    updated_at = CURRENT_TIMESTAMP
-                """,
-                (key, value_json, category)
-            )
-            self._conn.commit()
-        
-        await asyncio.to_thread(_set)
+        self._store.preferences[key] = value
+        await asyncio.to_thread(self._save_store)
     
     async def get_preference(self, key: str, default: Any = None) -> Any:
         """Get a user preference."""
         await self.initialize()
-        
-        def _get():
-            cursor = self._conn.execute(
-                "SELECT value FROM user_preferences WHERE key = ?",
-                (key,)
-            )
-            row = cursor.fetchone()
-            if row:
-                try:
-                    return json.loads(row["value"])
-                except (json.JSONDecodeError, TypeError):
-                    return row["value"]
-            return default
-        
-        return await asyncio.to_thread(_get)
+        return self._store.preferences.get(key, default)
     
     async def get_context_for_llm(self, max_entries: int = 10) -> str:
         """
@@ -272,7 +216,7 @@ class MemoryManager:
         if not memories:
             return ""
         
-        lines = ["User context (things I remember about the user):"]
+        lines = ["Användarkontext (saker jag minns om användaren):"]
         
         for mem in memories:
             category_emoji = {
@@ -281,45 +225,30 @@ class MemoryManager:
                 "facts": "📌",
                 "context": "💭",
                 "general": "📝"
-            }.get(mem.category, "📝")
+            }.get(mem.get('category', 'general'), "📝")
             
-            lines.append(f"{category_emoji} {mem.content}")
+            lines.append(f"{category_emoji} {mem.get('content', '')}")
         
         return "\n".join(lines)
     
-    async def save_conversation_summary(
-        self,
-        session_id: str,
-        summary: str,
-        key_points: List[str] = None,
-        topics: List[str] = None
-    ):
-        """Save a conversation summary."""
+    async def export_memory(self) -> Dict:
+        """Export all memory data (for backup/editing)."""
+        await self.initialize()
+        return {
+            'version': self._store.version,
+            'entries': self._store.entries,
+            'preferences': self._store.preferences,
+            'exported_at': datetime.now().isoformat()
+        }
+    
+    async def import_memory(self, data: Dict):
+        """Import memory data (from backup)."""
         await self.initialize()
         
-        def _save():
-            self._conn.execute(
-                """
-                INSERT INTO conversation_summaries (session_id, summary, key_points, topics)
-                VALUES (?, ?, ?, ?)
-                """,
-                (
-                    session_id,
-                    summary,
-                    json.dumps(key_points or []),
-                    json.dumps(topics or [])
-                )
-            )
-            self._conn.commit()
+        self._store.entries = data.get('entries', [])
+        self._store.preferences = data.get('preferences', {})
         
-        await asyncio.to_thread(_save)
-    
-    async def close(self):
-        """Close the database connection."""
-        if self._conn:
-            self._conn.close()
-            self._conn = None
-            self._initialized = False
+        await asyncio.to_thread(self._save_store)
 
 
 # Global memory manager instance

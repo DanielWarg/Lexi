@@ -16,8 +16,20 @@ import os
 import json
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
 
+# Load .env from repo root
+load_dotenv(Path(__file__).parent.parent / ".env")
 
+# --- GEMINI API KEY STATUS (CRITICAL) ---
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_KEY_LOADED = bool(GEMINI_API_KEY and len(GEMINI_API_KEY) > 10)
+
+if not GEMINI_KEY_LOADED:
+    print("[SERVER] ⚠️  WARNING: GEMINI_API_KEY not found or invalid!")
+    print("[SERVER] Voice/AI features will be DISABLED (fail-closed)")
+else:
+    print("[SERVER] ✅ GEMINI_API_KEY loaded successfully")
 
 # Ensure we can import lexi
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -128,10 +140,25 @@ async def startup_event():
 async def status():
     return {"status": "running", "service": "Lexi Backend"}
 
+@app.get("/api-status")
+async def api_status():
+    """Check if Gemini API key is loaded (fail-closed check)."""
+    return {
+        "gemini_key_loaded": GEMINI_KEY_LOADED,
+        "voice_enabled": GEMINI_KEY_LOADED,
+        "ai_enabled": GEMINI_KEY_LOADED
+    }
+
 @sio.event
 async def connect(sid, environ):
     print(f"Client connected: {sid}")
     await sio.emit('status', {'msg': 'Connected to Lexi Backend'}, room=sid)
+    
+    # Send API key status to frontend (fail-closed indicator)
+    await sio.emit('api_key_status', {
+        'gemini_key_loaded': GEMINI_KEY_LOADED,
+        'voice_enabled': GEMINI_KEY_LOADED
+    }, room=sid)
 
     global authenticator
     
@@ -175,6 +202,15 @@ async def disconnect(sid):
 @sio.event
 async def start_audio(sid, data=None):
     global audio_loop, loop_task
+    
+    # FAIL-CLOSED: Block if Gemini API key is not loaded
+    if not GEMINI_KEY_LOADED:
+        print("[SERVER] ❌ Blocked start_audio: GEMINI_API_KEY not configured")
+        await sio.emit('error', {
+            'msg': 'Gemini API-nyckel saknas. Lägg till GEMINI_API_KEY i .env-filen.',
+            'code': 'NO_API_KEY'
+        })
+        return
     
     # Optional: Block if not authenticated
     # Only block if auth is ENABLED and not authenticated

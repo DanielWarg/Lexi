@@ -44,6 +44,9 @@ function App() {
     const [isConnected, setIsConnected] = useState(true); // Power state DEFAULT ON
     const [isMuted, setIsMuted] = useState(true); // Mic state DEFAULT MUTED
     const [isVideoOn, setIsVideoOn] = useState(false); // Video state
+
+    // Gemini API key status (fail-closed indicator)
+    const [geminiKeyLoaded, setGeminiKeyLoaded] = useState(null); // null = unknown, true/false = status
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const [cadData, setCadData] = useState(null);
@@ -335,6 +338,16 @@ function App() {
         socket.on('audio_data', (data) => {
             setAiAudioData(data.data);
         });
+
+        // Gemini API key status (fail-closed indicator)
+        socket.on('api_key_status', (data) => {
+            console.log("API Key Status:", data);
+            setGeminiKeyLoaded(data.gemini_key_loaded);
+            if (!data.gemini_key_loaded) {
+                addMessage('System', '⚠️ Gemini API-nyckel saknas. Lägg till GEMINI_API_KEY i .env');
+            }
+        });
+
         socket.on('auth_status', (data) => {
             console.log("Auth Status:", data);
             setIsAuthenticated(data.authenticated);
@@ -1419,6 +1432,16 @@ function App() {
                             <span>{kasaDevices.length} Device{kasaDevices.length !== 1 ? 's' : ''}</span>
                         </div>
                     )}
+                    {/* Gemini API Key Status Indicator */}
+                    <div className={`flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded ml-2 ${geminiKeyLoaded === null
+                            ? 'text-gray-400 border border-gray-500/30 bg-gray-500/10'
+                            : geminiKeyLoaded
+                                ? 'text-green-400 border border-green-500/30 bg-green-500/10'
+                                : 'text-red-400 border border-red-500/30 bg-red-500/10'
+                        }`}>
+                        <span>{geminiKeyLoaded === null ? '⏳' : geminiKeyLoaded ? '✅' : '❌'}</span>
+                        <span>Gemini</span>
+                    </div>
                 </div>
 
                 {/* Top Visualizer (User Mic) */}
