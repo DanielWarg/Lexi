@@ -1,25 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Settings, Mic, Plus, Command, Cpu } from 'lucide-react';
+import { Send, Mic, Plus, Power, FolderOpen, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SettingsModal from './SettingsModal';
 import BreathingOrb from './BreathingOrb';
 import ProjectListPopup from './ProjectListPopup';
 import ProjectDetailPopup from './ProjectDetailPopup';
 
+/**
+ * ChatInterface - Main Lexi Prime interface
+ * Clean, minimal design: Orb + Chat + Input + Menu
+ * All other views are popups (per UX_CHARTER)
+ */
 const ChatInterface = ({ user, onUserUpdate }) => {
+    // Chat state
     const [messages, setMessages] = useState([
         { role: 'assistant', content: `Identity verified: ${user?.name || "User"}. Core systems initialized.` }
     ]);
     const [input, setInput] = useState("");
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [orbMode, setOrbMode] = useState('idle');
     const messagesEndRef = useRef(null);
 
-    // Project State
-    const [activeProject, setActiveProject] = useState(null);
-    const [selectedProject, setSelectedProject] = useState(null);
-    const [isProjectPopupOpen, setIsProjectPopupOpen] = useState(false);
+    // Modal states
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isProjectListOpen, setIsProjectListOpen] = useState(false);
+    const [isProjectPopupOpen, setIsProjectPopupOpen] = useState(false);
+    const [selectedProject, setSelectedProject] = useState(null);
+
+    // Control states
+    const [isConnected, setIsConnected] = useState(true);
+    const [isMuted, setIsMuted] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,20 +39,15 @@ const ChatInterface = ({ user, onUserUpdate }) => {
     const handleSend = async () => {
         if (!input.trim()) return;
 
-        const updatedMessages = [...messages, { role: 'user', content: input }];
-        setMessages(updatedMessages);
+        setMessages(prev => [...prev, { role: 'user', content: input }]);
         setInput("");
         setOrbMode('thinking');
 
-        try {
-            setTimeout(() => {
-                setMessages(prev => [...prev, { role: 'assistant', content: "Processing request. Protocols engaged." }]);
-                setOrbMode('idle');
-            }, 1200);
-        } catch (err) {
-            console.error(err);
+        // Mock response
+        setTimeout(() => {
+            setMessages(prev => [...prev, { role: 'assistant', content: "Processing request. Protocols engaged." }]);
             setOrbMode('idle');
-        }
+        }, 1200);
     };
 
     const handleKeyDown = (e) => {
@@ -59,71 +63,60 @@ const ChatInterface = ({ user, onUserUpdate }) => {
             {/* Deep Space Vignette */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000000_90%)] pointer-events-none" />
 
-            {/* Top HUD Bar */}
-            <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-10 pointer-events-none">
+            {/* Top Header - Simple */}
+            <div className="absolute top-0 left-0 w-full p-6 z-10 pointer-events-none">
                 <div className="flex flex-col">
-                    <h1 className="text-cyan-500/50 text-[10px] font-mono tracking-[0.2em] uppercase neon-text">Lexi Prime /// v4.0</h1>
-                    <div className="flex items-center gap-2 mt-1">
-                        <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
-                        <span className="text-zinc-600 text-[9px] uppercase tracking-wider">Secure Connection</span>
+                    <h1 className="text-cyan-500/50 text-[10px] font-mono tracking-[0.2em] uppercase neon-text">Lexi Prime</h1>
+                    <div className="flex items-center gap-1.5 mt-1">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                        <span className="text-cyan-500/50 text-[10px] font-mono tracking-[0.2em] uppercase">Online</span>
                     </div>
                 </div>
-                <button
-                    onClick={() => setIsSettingsOpen(true)}
-                    className="pointer-events-auto p-2 text-zinc-600 hover:text-cyan-400 transition-colors glass-panel rounded-lg hover:border-cyan-500/50"
-                >
-                    <Settings size={18} />
-                </button>
             </div>
 
-            {/* Central Intelligence (The Orb) */}
+            {/* Central Orb */}
             <div className="absolute top-8 left-0 w-full flex justify-center z-0 pointer-events-none">
                 <BreathingOrb mode={orbMode} />
             </div>
 
-            {/* Chat Area - Glass Panels */}
-            <div className="flex-1 w-full max-w-4xl mx-auto pt-44 pb-48 px-4 md:px-8 overflow-y-auto scrollbar-none z-10 relative">
-                <AnimatePresence>
-                    {messages.map((msg, idx) => (
-                        <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            className={`mb-6 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                        >
-                            <div className={`relative max-w-[80%] p-5 rounded-2xl border backdrop-blur-md ${msg.role === 'user'
-                                ? 'bg-cyan-950/20 border-cyan-500/20 text-cyan-100 rounded-br-none'
-                                : 'bg-zinc-900/40 border-white/5 text-zinc-300 rounded-bl-none shadow-lg'
-                                }`}>
-                                {/* Decorator Line for Assistant */}
-                                {msg.role === 'assistant' && (
-                                    <div className="absolute -left-[1px] top-4 bottom-4 w-[2px] bg-cyan-500/50 rounded-full" />
-                                )}
-                                <div className="text-[15px] leading-relaxed tracking-wide font-light">
-                                    {msg.content}
+            {/* Chat Area - Below Orb, Above Input */}
+            <div className="absolute top-52 bottom-32 left-0 right-0 overflow-y-auto scrollbar-none z-10">
+                <div className="max-w-3xl mx-auto px-4 md:px-8 pb-4">
+                    <AnimatePresence>
+                        {messages.map((msg, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                className={`mb-6 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                            >
+                                <div className={`relative max-w-[80%] p-5 rounded-2xl border backdrop-blur-md ${msg.role === 'user'
+                                    ? 'bg-cyan-950/20 border-cyan-500/20 text-cyan-100 rounded-br-none'
+                                    : 'bg-zinc-900/40 border-white/5 text-zinc-300 rounded-bl-none shadow-lg'
+                                    }`}>
+                                    {msg.role === 'assistant' && (
+                                        <div className="absolute -left-[1px] top-4 bottom-4 w-[2px] bg-cyan-500/50 rounded-full" />
+                                    )}
+                                    <div className="text-[15px] leading-relaxed tracking-wide font-light">
+                                        {msg.content}
+                                    </div>
                                 </div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
-                <div ref={messagesEndRef} />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                    <div ref={messagesEndRef} />
+                </div>
             </div>
 
-            {/* Bottom Floating Command Deck (Jarvis Style) */}
-            <div className="fixed bottom-0 left-0 w-full p-6 z-50">
-                <div className="max-w-2xl mx-auto">
-                    {/* The Capsule */}
-                    <div className="group relative flex items-center gap-2 glass-panel rounded-full p-2 transition-all duration-300 hover:border-cyan-500/30 focus-within:border-cyan-500/50 focus-within:shadow-[0_0_30px_rgba(0,240,255,0.1)]">
-
-                        {/* Tools Button */}
+            {/* Bottom Section: Input + Menu */}
+            <div className="fixed bottom-0 left-0 w-full z-50">
+                {/* Command Input */}
+                <div className="max-w-2xl mx-auto px-6 pb-3">
+                    <div className="flex items-center gap-2 glass-panel rounded-full p-2">
                         <button className="p-3 text-cyan-500/60 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-full transition-all">
                             <Plus size={20} />
                         </button>
-
-                        {/* Divider */}
                         <div className="w-[1px] h-6 bg-white/10" />
-
-                        {/* Input Field */}
                         <textarea
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
@@ -132,19 +125,12 @@ const ChatInterface = ({ user, onUserUpdate }) => {
                             className="flex-1 bg-transparent text-white placeholder-zinc-600 px-3 py-3 focus:outline-none resize-none text-[15px] font-light h-12 pt-3"
                             rows={1}
                         />
-
-                        {/* Voice Node */}
                         <button className={`p-3 rounded-full transition-all ${input.trim().length > 0
                             ? 'text-zinc-600 hover:text-white'
-                            : 'text-cyan-500 hover:text-cyan-300 hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]'
+                            : 'text-cyan-500 hover:text-cyan-300'
                             }`}>
-                            <div className="relative">
-                                <Mic size={20} />
-                                {!input.trim() && <div className="absolute inset-0 bg-cyan-400/20 blur-md rounded-full animate-pulse" />}
-                            </div>
+                            <Mic size={20} />
                         </button>
-
-                        {/* Send Action */}
                         <AnimatePresence>
                             {input.trim() && (
                                 <motion.button
@@ -152,7 +138,7 @@ const ChatInterface = ({ user, onUserUpdate }) => {
                                     animate={{ scale: 1, opacity: 1 }}
                                     exit={{ scale: 0, opacity: 0 }}
                                     onClick={handleSend}
-                                    className="p-3 bg-cyan-500 text-black rounded-full hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(0,240,255,0.5)] transition-all mr-1"
+                                    className="p-3 bg-cyan-500 text-black rounded-full hover:bg-cyan-400 transition-all mr-1"
                                 >
                                     <Send size={18} />
                                 </motion.button>
@@ -160,8 +146,52 @@ const ChatInterface = ({ user, onUserUpdate }) => {
                         </AnimatePresence>
                     </div>
                 </div>
+
+                {/* Bottom Menu Bar - Clean, from scratch */}
+                <div className="backdrop-blur-xl bg-black/40 border-t border-white/5 py-2.5 px-6">
+                    <div className="max-w-2xl mx-auto flex justify-center gap-3">
+                        {/* Power */}
+                        <button
+                            onClick={() => setIsConnected(!isConnected)}
+                            className={`p-2 rounded-full border transition-all ${isConnected
+                                ? 'border-green-500/40 bg-green-500/10 text-green-500'
+                                : 'border-zinc-700 bg-zinc-800/50 text-zinc-500'
+                                }`}
+                        >
+                            <Power size={16} />
+                        </button>
+
+                        {/* Mic */}
+                        <button
+                            onClick={() => setIsMuted(!isMuted)}
+                            className={`p-2 rounded-full border transition-all ${isMuted
+                                ? 'border-red-500/40 bg-red-500/10 text-red-500'
+                                : 'border-cyan-500/40 bg-cyan-500/10 text-cyan-500'
+                                }`}
+                        >
+                            <Mic size={16} />
+                        </button>
+
+                        {/* Projects */}
+                        <button
+                            onClick={() => setIsProjectListOpen(true)}
+                            className="p-2 rounded-full border border-zinc-700 text-zinc-500 hover:border-cyan-500/40 hover:text-cyan-400 transition-all"
+                        >
+                            <FolderOpen size={16} />
+                        </button>
+
+                        {/* Settings */}
+                        <button
+                            onClick={() => setIsSettingsOpen(true)}
+                            className="p-2 rounded-full border border-zinc-700 text-zinc-500 hover:border-cyan-500/40 hover:text-cyan-400 transition-all"
+                        >
+                            <Settings size={16} />
+                        </button>
+                    </div>
+                </div>
             </div>
 
+            {/* Modals & Popups */}
             <SettingsModal
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
@@ -169,7 +199,6 @@ const ChatInterface = ({ user, onUserUpdate }) => {
                 onSave={onUserUpdate}
             />
 
-            {/* Project Popups (on-demand, not static) */}
             <AnimatePresence>
                 {isProjectListOpen && (
                     <ProjectListPopup
@@ -182,6 +211,7 @@ const ChatInterface = ({ user, onUserUpdate }) => {
                     />
                 )}
             </AnimatePresence>
+
             <AnimatePresence>
                 <ProjectDetailPopup
                     project={selectedProject}
