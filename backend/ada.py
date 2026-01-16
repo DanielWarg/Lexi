@@ -272,6 +272,9 @@ class AudioLoop:
         self._is_speaking = False
         self._silence_start_time = None
         
+        # Echo Cancellation: Track when A.D.A is speaking to drop mic input
+        self.is_speaking = False
+        
         # Initialize ProjectManager
         from project_manager import ProjectManager
         # Assuming we are running from backend/ or root? 
@@ -421,6 +424,11 @@ class AudioLoop:
 
             try:
                 data = await asyncio.to_thread(self.audio_stream.read, CHUNK_SIZE, **kwargs)
+                
+                # ECHO CANCELLATION: Drop mic input while A.D.A is speaking
+                if self.is_speaking:
+                    # Skip sending this audio chunk to prevent feedback loop
+                    continue
                 
                 # 1. Send Audio
                 if self.out_queue:
@@ -1134,9 +1142,17 @@ class AudioLoop:
         )
         while True:
             bytestream = await self.audio_in_queue.get()
+            
+            # Set speaking flag when we start playing audio
+            self.is_speaking = True
+            
             if self.on_audio_data:
                 self.on_audio_data(bytestream)
             await asyncio.to_thread(stream.write, bytestream)
+            
+            # Check if queue is empty - if so, we're done speaking
+            if self.audio_in_queue.empty():
+                self.is_speaking = False
 
     async def get_frames(self):
         cap = await asyncio.to_thread(cv2.VideoCapture, 0, cv2.CAP_AVFOUNDATION)
