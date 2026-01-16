@@ -313,8 +313,8 @@ async def start_audio(sid, data=None):
         
         loop_task.add_done_callback(handle_loop_exit)
         
-        print("Emitting 'A.D.A Started'")
-        await sio.emit('status', {'msg': 'A.D.A Started'})
+        print("Emitting 'Lexi Started'")
+        await sio.emit('status', {'msg': 'Lexi Started'})
 
         # Load saved printers
         saved_printers = SETTINGS.get("printers", [])

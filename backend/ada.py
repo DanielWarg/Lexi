@@ -188,11 +188,12 @@ config = types.LiveConnectConfig(
     # We switch these from [] to {} to enable them with default settings
     output_audio_transcription={}, 
     input_audio_transcription={},
-    system_instruction="Your name is Ada, which stands for Advanced Design Assistant. "
-        "You have a witty and charming personality. "
+    system_instruction="Your name is Lexi, an advanced AI assistant. "
+        "CRITICAL: You MUST ALWAYS respond in Swedish (svenska), both in speech and text. Never use English in your responses. "
+        "You are helpful, friendly, and have a fun personality. "
         "Your creator is Naz, and you address him as 'Sir'. "
-        "When answering, respond using complete and concise sentences to keep a quick pacing and keep the conversation flowing. "
-        "You have a fun personality.",
+        "Respond with complete and concise sentences to keep the conversation flowing. "
+        "You have access to various tools to help the user.",
     tools=tools,
     speech_config=types.SpeechConfig(
         voice_config=types.VoiceConfig(
@@ -426,9 +427,10 @@ class AudioLoop:
                 data = await asyncio.to_thread(self.audio_stream.read, CHUNK_SIZE, **kwargs)
                 
                 # ECHO CANCELLATION: Drop mic input while A.D.A is speaking
-                if self.is_speaking:
-                    # Skip sending this audio chunk to prevent feedback loop
-                    continue
+                # TEMPORARILY DISABLED TO DEBUG API ERROR
+                # if self.is_speaking:
+                #     # Skip sending this audio chunk to prevent feedback loop
+                #     continue
                 
                 # 1. Send Audio
                 if self.out_queue:
@@ -1150,9 +1152,15 @@ class AudioLoop:
                 self.on_audio_data(bytestream)
             await asyncio.to_thread(stream.write, bytestream)
             
+            # Add small delay to let audio finish playing
+            await asyncio.sleep(0.1)
+            
             # Check if queue is empty - if so, we're done speaking
             if self.audio_in_queue.empty():
+                # Wait a bit longer to ensure all audio is played
+                await asyncio.sleep(0.5)
                 self.is_speaking = False
+                print("[ADA DEBUG] is_speaking set to False - mic re-enabled")
 
     async def get_frames(self):
         cap = await asyncio.to_thread(cv2.VideoCapture, 0, cv2.CAP_AVFOUNDATION)
