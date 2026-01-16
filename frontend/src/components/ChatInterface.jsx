@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Mic, Plus, Power, FolderOpen, Settings } from 'lucide-react';
+import { Send, Mic, Plus, Power, FolderOpen, Settings, Camera, Smartphone, Globe, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SettingsModal from './SettingsModal';
 import BreathingOrb from './BreathingOrb';
@@ -14,7 +14,15 @@ import ProjectDetailPopup from './ProjectDetailPopup';
 const ChatInterface = ({ user, onUserUpdate }) => {
     // Chat state
     const [messages, setMessages] = useState([
-        { role: 'assistant', content: `Identity verified: ${user?.name || "User"}. Core systems initialized.` }
+        { role: 'assistant', content: `Identity verified: ${user?.name || "User"}. Core systems initialized.` },
+        { role: 'user', content: 'Vad är statusen på Volvo-projektet?' },
+        { role: 'assistant', content: 'Volvo-projektet (LEXI-3) är aktivt. Senaste aktivitet: 2 dokument skapade, 5 konversationer loggade. Vill du att jag öppnar projektdetaljerna?' },
+        { role: 'user', content: 'Ja, visa projektet' },
+        { role: 'assistant', content: 'Öppnar projektvy för Volvo... Projektet innehåller: Q1 Rapport (utkast), Budget 2026 (godkänd), och 3 mötesanteckningar. Vad vill du arbeta med?' },
+        { role: 'user', content: 'Skapa en ny rapport för Q2' },
+        { role: 'assistant', content: 'Skapar utkast för Q2-rapport. Jag kommer basera strukturen på din Q1-rapport. Vill du att jag inkluderar samma rubriker?' },
+        { role: 'user', content: 'Ja, använd samma struktur' },
+        { role: 'assistant', content: 'Förstått. Jag genererar Q2-rapporten nu. Förväntat: Sammanfattning, Nyckeltal, Utmaningar, Nästa steg. Jag meddelar när den är klar.' },
     ]);
     const [input, setInput] = useState("");
     const [orbMode, setOrbMode] = useState('idle');
@@ -80,10 +88,10 @@ const ChatInterface = ({ user, onUserUpdate }) => {
             </div>
 
             {/* Chat Area - Below Orb, Above Input */}
-            <div className="absolute top-52 bottom-32 left-0 right-0 overflow-y-auto scrollbar-none z-10">
+            <div className="absolute top-[17rem] bottom-32 left-0 right-0 overflow-y-auto scrollbar-none z-10">
                 <div className="max-w-3xl mx-auto px-4 md:px-8 pb-4">
                     <AnimatePresence>
-                        {messages.map((msg, idx) => (
+                        {messages.slice(-4).map((msg, idx) => (
                             <motion.div
                                 key={idx}
                                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -116,7 +124,6 @@ const ChatInterface = ({ user, onUserUpdate }) => {
                         <button className="p-3 text-cyan-500/60 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-full transition-all">
                             <Plus size={20} />
                         </button>
-                        <div className="w-[1px] h-6 bg-white/10" />
                         <textarea
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
@@ -125,8 +132,8 @@ const ChatInterface = ({ user, onUserUpdate }) => {
                             className="flex-1 bg-transparent text-white placeholder-zinc-600 px-3 py-3 focus:outline-none resize-none text-[15px] font-light h-12 pt-3"
                             rows={1}
                         />
-                        <button className={`p-3 rounded-full transition-all ${input.trim().length > 0
-                            ? 'text-zinc-600 hover:text-white'
+                        <button className={`p-3 rounded-full transition-all ${isMuted
+                            ? 'text-red-500 hover:text-red-400'
                             : 'text-cyan-500 hover:text-cyan-300'
                             }`}>
                             <Mic size={20} />
@@ -148,7 +155,7 @@ const ChatInterface = ({ user, onUserUpdate }) => {
                 </div>
 
                 {/* Bottom Menu Bar - Clean, from scratch */}
-                <div className="backdrop-blur-xl bg-black/40 border-t border-white/5 py-2.5 px-6">
+                <div className="backdrop-blur-xl bg-black/40 py-2.5 px-6">
                     <div className="max-w-2xl mx-auto flex justify-center gap-3">
                         {/* Power */}
                         <button
@@ -180,7 +187,35 @@ const ChatInterface = ({ user, onUserUpdate }) => {
                             <FolderOpen size={16} />
                         </button>
 
-                        {/* Settings */}
+                        {/* Camera */}
+                        <button
+                            className="p-2 rounded-full border border-zinc-700 text-zinc-500 hover:border-purple-500/40 hover:text-purple-400 transition-all"
+                        >
+                            <Camera size={16} />
+                        </button>
+
+                        {/* Mobile */}
+                        <button
+                            className="p-2 rounded-full border border-zinc-700 text-zinc-500 hover:border-blue-500/40 hover:text-blue-400 transition-all"
+                        >
+                            <Smartphone size={16} />
+                        </button>
+
+                        {/* Web */}
+                        <button
+                            className="p-2 rounded-full border border-zinc-700 text-zinc-500 hover:border-emerald-500/40 hover:text-emerald-400 transition-all"
+                        >
+                            <Globe size={16} />
+                        </button>
+
+                        {/* Printer */}
+                        <button
+                            className="p-2 rounded-full border border-zinc-700 text-zinc-500 hover:border-amber-500/40 hover:text-amber-400 transition-all"
+                        >
+                            <Printer size={16} />
+                        </button>
+
+                        {/* Settings - Far Right */}
                         <button
                             onClick={() => setIsSettingsOpen(true)}
                             className="p-2 rounded-full border border-zinc-700 text-zinc-500 hover:border-cyan-500/40 hover:text-cyan-400 transition-all"
