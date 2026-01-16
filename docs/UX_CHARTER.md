@@ -9,7 +9,7 @@ Lexi is the **only actor**. The user speaks. Lexi does.
 
 ### 1. Voice-First, Always On
 - Microphone is **always active** (no push-to-talk).
-- User can only: (1) mute mic in settings, (2) close popups manually.
+- User can only: (1) mute mic in settings, (2) close popups manually, (3) drag/move popups.
 - All navigation, creation, and editing happens via voice.
 
 ### 2. No Buttons for Actions
