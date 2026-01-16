@@ -1,5 +1,18 @@
 # Lexi Prime: Agent Guidelines (`AGENTS.md`)
 
+Non-negotiable quality policy
+Läs AGENTS.md och docs/QUALITY_CHARTER.md och följ dem strikt.
+
+We optimize for correctness and readability over speed.
+
+If output is not correct AND readable, it must be blocked (fail-closed). Never “almost correct”.
+
+Prefer deterministic code fixes (normalize/layout/gates) over prompt tweaks.
+
+Every PR must include: (1) tests updated/added, (2) before/after evidence, (3) risk/tradeoff note.
+
+No new features until golden-path + render-gates are stable.
+
 This document guides AI agents (and humans) working on Lexi Prime.
 **Strictly follow these rules.** This is a "Vertical Slice" architecture (Local-First).
 

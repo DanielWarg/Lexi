@@ -46,7 +46,7 @@ const ChatInterface = ({ user, onUserUpdate }) => {
     };
 
     return (
-        <div className="flex flex-col h-screen w-full bg-[#050505] text-white font-sans overflow-hidden relative scifi-grid selection:bg-cyan-500/30">
+        <div className="flex flex-col h-screen w-full bg-[#050505] text-white font-sans overflow-hidden relative selection:bg-cyan-500/30">
 
             {/* Deep Space Vignette */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000000_90%)] pointer-events-none" />
@@ -84,8 +84,8 @@ const ChatInterface = ({ user, onUserUpdate }) => {
                             className={`mb-6 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
                             <div className={`relative max-w-[80%] p-5 rounded-2xl border backdrop-blur-md ${msg.role === 'user'
-                                    ? 'bg-cyan-950/20 border-cyan-500/20 text-cyan-100 rounded-br-none'
-                                    : 'bg-zinc-900/40 border-white/5 text-zinc-300 rounded-bl-none shadow-lg'
+                                ? 'bg-cyan-950/20 border-cyan-500/20 text-cyan-100 rounded-br-none'
+                                : 'bg-zinc-900/40 border-white/5 text-zinc-300 rounded-bl-none shadow-lg'
                                 }`}>
                                 {/* Decorator Line for Assistant */}
                                 {msg.role === 'assistant' && (
@@ -127,8 +127,8 @@ const ChatInterface = ({ user, onUserUpdate }) => {
 
                         {/* Voice Node */}
                         <button className={`p-3 rounded-full transition-all ${input.trim().length > 0
-                                ? 'text-zinc-600 hover:text-white'
-                                : 'text-cyan-500 hover:text-cyan-300 hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]'
+                            ? 'text-zinc-600 hover:text-white'
+                            : 'text-cyan-500 hover:text-cyan-300 hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]'
                             }`}>
                             <div className="relative">
                                 <Mic size={20} />
