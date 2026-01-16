@@ -3,7 +3,7 @@ import { Send, Settings, Mic, Plus, Command, Cpu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SettingsModal from './SettingsModal';
 import BreathingOrb from './BreathingOrb';
-import ProjectListCanvas from './ProjectListCanvas';
+import ProjectListPopup from './ProjectListPopup';
 import ProjectDetailPopup from './ProjectDetailPopup';
 
 const ChatInterface = ({ user, onUserUpdate }) => {
@@ -19,6 +19,7 @@ const ChatInterface = ({ user, onUserUpdate }) => {
     const [activeProject, setActiveProject] = useState(null);
     const [selectedProject, setSelectedProject] = useState(null);
     const [isProjectPopupOpen, setIsProjectPopupOpen] = useState(false);
+    const [isProjectListOpen, setIsProjectListOpen] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -168,10 +169,19 @@ const ChatInterface = ({ user, onUserUpdate }) => {
                 onSave={onUserUpdate}
             />
 
-            {/* Project System */}
-            <ProjectListCanvas
-                activeProjectId={activeProject?.id}
-            />
+            {/* Project Popups (on-demand, not static) */}
+            <AnimatePresence>
+                {isProjectListOpen && (
+                    <ProjectListPopup
+                        onSelectProject={(project) => {
+                            setSelectedProject(project);
+                            setIsProjectPopupOpen(true);
+                            setIsProjectListOpen(false);
+                        }}
+                        onClose={() => setIsProjectListOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
             <AnimatePresence>
                 <ProjectDetailPopup
                     project={selectedProject}
