@@ -577,8 +577,8 @@ function App() {
             }
         });
 
-        // Initialize Hand Landmarker
-        const initHandLandmarker = async () => {
+        // Initialize Hand Landmarker - DISABLED FOR REMOVAL
+        /* const initHandLandmarker = async () => {
             try {
                 console.log("Initializing HandLandmarker...");
 
@@ -615,7 +615,7 @@ function App() {
                 addMessage('System', `Hand Tracking Error: ${error.message}`);
             }
         };
-        initHandLandmarker();
+        initHandLandmarker(); */
 
         return () => {
             socket.off('connect');

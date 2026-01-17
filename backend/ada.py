@@ -426,11 +426,10 @@ class AudioLoop:
             try:
                 data = await asyncio.to_thread(self.audio_stream.read, CHUNK_SIZE, **kwargs)
                 
-                # ECHO CANCELLATION: Drop mic input while A.D.A is speaking
-                # TEMPORARILY DISABLED TO DEBUG API ERROR
-                # if self.is_speaking:
-                #     # Skip sending this audio chunk to prevent feedback loop
-                #     continue
+                # ECHO CANCELLATION: Drop mic input while Lexi is speaking
+                if self.is_speaking:
+                    # Skip sending this audio chunk to prevent feedback loop
+                    continue
                 
                 # 1. Send Audio
                 if self.out_queue:
@@ -1145,6 +1144,10 @@ class AudioLoop:
         while True:
             bytestream = await self.audio_in_queue.get()
             
+            # PERFORMANCE DEBUG
+            queue_size = self.audio_in_queue.qsize()
+            print(f"[PERF] Audio chunk received. Queue size: {queue_size}, is_speaking: {self.is_speaking}")
+            
             # Set speaking flag when we start playing audio
             self.is_speaking = True
             
@@ -1160,7 +1163,7 @@ class AudioLoop:
                 # Wait a bit longer to ensure all audio is played
                 await asyncio.sleep(0.5)
                 self.is_speaking = False
-                print("[ADA DEBUG] is_speaking set to False - mic re-enabled")
+                print("[PERF] is_speaking set to False - mic re-enabled")
 
     async def get_frames(self):
         cap = await asyncio.to_thread(cv2.VideoCapture, 0, cv2.CAP_AVFOUNDATION)
