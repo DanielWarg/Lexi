@@ -166,11 +166,10 @@ function App() {
     useEffect(() => {
         isModularModeRef.current = isModularMode;
         elementPositionsRef.current = elementPositions;
-        isHandTrackingEnabledRef.current = isHandTrackingEnabled;
-        cursorSensitivityRef.current = cursorSensitivity;
-        isCameraFlippedRef.current = isCameraFlipped;
-        console.log("[Ref Sync] Camera flipped ref updated to:", isCameraFlipped);
-    }, [isModularMode, elementPositions, isHandTrackingEnabled, cursorSensitivity, isCameraFlipped]);
+        // isHandTrackingEnabledRef.current = isHandTrackingEnabled; // DISABLED
+        // cursorSensitivityRef.current = cursorSensitivity; // DISABLED
+        // isCameraFlippedRef.current = isCameraFlipped; // DISABLED
+    }, [isModularMode, elementPositions]);
 
     // Live Clock Update
     useEffect(() => {
