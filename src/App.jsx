@@ -1630,13 +1630,13 @@ function App() {
                         isConnected={isConnected}
                         isMuted={isMuted}
                         isVideoOn={isVideoOn}
-                        isHandTrackingEnabled={isHandTrackingEnabled}
+                        /* isHandTrackingEnabled={isHandTrackingEnabled} - DISABLED */
                         showSettings={showSettings}
                         onTogglePower={togglePower}
                         onToggleMute={toggleMute}
                         onToggleVideo={toggleVideo}
                         onToggleSettings={() => setShowSettings(!showSettings)}
-                        onToggleHand={() => setIsHandTrackingEnabled(!isHandTrackingEnabled)}
+                        /* onToggleHand={() => setIsHandTrackingEnabled(!isHandTrackingEnabled)} - DISABLED */
                         onToggleKasa={toggleKasaWindow}
                         showKasaWindow={showKasaWindow}
                         onTogglePrinter={togglePrinterWindow}
