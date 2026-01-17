@@ -52,3 +52,35 @@
 - **Surgical Changes:** When debugging, create a reproduction script or minimal test case first.
 - **File Operations:** Always use absolute paths or resolve relative paths safely.
 - **Safety:** Do not delete user data without confirmation.
+
+---
+
+## 3. Project Status & Documentation
+
+### Current State (2026-01-17)
+- **Project Name:** Lexi (formerly A.D.A)
+- **Language:** Swedish responses enforced
+- **WebAgent:** ✅ Active and functional (core feature - DO NOT REMOVE)
+- **PrinterAgent:** ❌ Removed
+- **Hand Gestures:** ❌ Being removed (in progress)
+- **CAD:** ✅ Active (scheduled for removal)
+
+### Key Architectural Insight: React Prop Dependencies
+When adding or removing features, follow this order to avoid black screen:
+
+**Removal (bottom-up):**
+1. UI elements (buttons, settings)
+2. Logic (functions, loops)
+3. Props (from parent → child)
+4. State variables
+5. Imports
+
+**Addition (top-down):**
+1. State variables first
+2. Props to child components
+3. Logic implementation
+4. UI elements last
+
+### Git Tags
+- `v1.0-webagent-working`: Stable base with WebAgent
+- `v1.1-lag-debugging`: Debug state for audio lag investigation
