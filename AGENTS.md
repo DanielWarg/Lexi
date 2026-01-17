@@ -63,7 +63,7 @@
 - **WebAgent:** ✅ Active and functional (core feature - DO NOT REMOVE)
 - **PrinterAgent:** ❌ Removed
 - **Hand Gestures:** ❌ Removed (UI, logic, props disabled; state remains for safety)
-- **CAD:** ✅ Active (scheduled for removal)
+- **CAD:** ❌ Removed (UI hidden, backend logic disabled, files deleted)
 - **Performance:** ✅ Optimized (Audio lag fixed, UI animations converted to CSS)
 
 ### Key Architectural Insight: React Prop Dependencies
@@ -85,3 +85,4 @@ When adding or removing features, follow this order to avoid black screen:
 ### Git Tags
 - `v1.0-webagent-working`: Stable base with WebAgent
 - `v1.1-lag-debugging`: Debug state for audio lag investigation
+- `stable-voice-restore-point`: (Tag) Verified working state before CAD cleanup (Voice OK, CAD UI Hidden)

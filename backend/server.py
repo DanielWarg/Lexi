@@ -215,9 +215,7 @@ async def start_audio(sid, data=None):
 
     # Callback to send CAL data to frontend
     def on_cad_data(data):
-        info = f"{len(data.get('vertices', []))} vertices" if 'vertices' in data else f"{len(data.get('data', ''))} bytes (STL)"
-        print(f"Sending CAD data to frontend: {info}")
-        asyncio.create_task(sio.emit('cad_data', data))
+        pass
 
     # Callback to send Browser data to frontend
     def on_web_data(data):
@@ -237,20 +235,11 @@ async def start_audio(sid, data=None):
 
     # Callback to send CAD status to frontend
     def on_cad_status(status):
-        # status can be: 
-        # - a string like "generating" (from ada.py handle_cad_request)
-        # - a dict with {status, attempt, max_attempts, error} (from CadAgent)
-        if isinstance(status, dict):
-            print(f"Sending CAD Status: {status.get('status')} (attempt {status.get('attempt')}/{status.get('max_attempts')})")
-            asyncio.create_task(sio.emit('cad_status', status))
-        else:
-            # Legacy: simple string
-            print(f"Sending CAD Status: {status}")
-            asyncio.create_task(sio.emit('cad_status', {'status': status}))
+        pass
 
     # Callback to send CAD thoughts to frontend (streaming)
     def on_cad_thought(thought_text):
-        asyncio.create_task(sio.emit('cad_thought', {'text': thought_text}))
+        pass
 
     # Callback to send Project Update to frontend
     def on_project_update(project_name):
@@ -804,6 +793,16 @@ async def add_printer(sid, data):
     except Exception as e:
         print(f"Error adding printer: {e}")
         await sio.emit('error', {'msg': f"Failed to add printer: {str(e)}"})
+
+@sio.event
+async def iterate_cad(sid, data):
+    print("Iterate CAD disabled")
+    await sio.emit('error', {'msg': "CAD functionality removed"})
+
+@sio.event
+async def generate_cad(sid, data):
+    print("Generate CAD disabled")
+    await sio.emit('error', {'msg': "CAD functionality removed"})
 
 @sio.event
 async def print_stl(sid, data):
