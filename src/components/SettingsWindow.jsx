@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
 const TOOLS = [
-    { id: 'generate_cad', label: 'Generate CAD' },
+    // { id: 'generate_cad', label: 'Generate CAD' },
     { id: 'run_web_agent', label: 'Web Agent' },
     { id: 'create_directory', label: 'Create Folder' },
     { id: 'write_file', label: 'Write File' },
@@ -15,7 +15,7 @@ const TOOLS = [
     { id: 'control_light', label: 'Control Light' },
     { id: 'discover_printers', label: 'Discover Printers' },
     { id: 'print_stl', label: 'Print 3D Model' },
-    { id: 'iterate_cad', label: 'Iterate CAD' },
+    // { id: 'iterate_cad', label: 'Iterate CAD' },
 ];
 
 const SettingsWindow = ({

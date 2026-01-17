@@ -120,8 +120,8 @@ const ToolsModule = ({
                     <Printer size={24} />
                 </button>
 
-                {/* CAD Agent Toggle */}
-                <button
+                {/* CAD Agent Toggle - DISABLED FOR REMOVAL */}
+                {/* <button
                     onClick={onToggleCad}
                     className={`p-3 rounded-full border-2 transition-all duration-300 ${showCadWindow
                         ? 'border-cyan-400 bg-cyan-400/10 text-cyan-400 hover:bg-cyan-400/20 shadow-[0_0_15px_rgba(34,211,238,0.3)]'
@@ -129,7 +129,7 @@ const ToolsModule = ({
                         } `}
                 >
                     <Box size={24} />
-                </button>
+                </button> */}
 
                 {/* Web Agent Toggle */}
                 <button
