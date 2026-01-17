@@ -704,15 +704,15 @@ class AudioLoop:
                                     if delta:
                                         # Send to frontend (Streaming)
                                         if self.on_transcription:
-                                             self.on_transcription({"sender": "ADA", "text": delta})
+                                             self.on_transcription({"sender": "Lexi", "text": delta})
                                         
                                         # Buffer for Logging
-                                        if self.chat_buffer["sender"] != "ADA":
+                                        if self.chat_buffer["sender"] != "Lexi":
                                             # Flush previous
                                             if self.chat_buffer["sender"] and self.chat_buffer["text"].strip():
                                                 self.project_manager.log_chat(self.chat_buffer["sender"], self.chat_buffer["text"])
                                             # Start new
-                                            self.chat_buffer = {"sender": "ADA", "text": delta}
+                                            self.chat_buffer = {"sender": "Lexi", "text": delta}
                                         else:
                                             # Append
                                             self.chat_buffer["text"] += delta

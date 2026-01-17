@@ -53,15 +53,18 @@ const ChatModule = ({
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="flex gap-2 relative z-10 absolute bottom-4 left-6 right-6">
-                <input
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleSend}
-                    placeholder="INITIALIZE COMMAND..."
-                    className="flex-1 bg-black/40 border border-cyan-700/30 rounded-lg p-3 text-cyan-50 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all placeholder-cyan-800/50 backdrop-blur-sm"
-                />
+            <div className="absolute bottom-4 left-0 w-full px-6 z-10">
+                <div className="flex items-center w-full bg-black/40 border border-cyan-700/30 rounded-lg px-3 py-3 backdrop-blur-sm focus-within:border-cyan-400 focus-within:ring-1 focus-within:ring-cyan-400/50 transition-all">
+                    <span className="text-cyan-400 font-bold animate-pulse mr-2 select-none">_</span>
+                    <input
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={handleSend}
+                        placeholder="INITIALIZE COMMAND..."
+                        className="flex-1 bg-transparent border-none outline-none text-cyan-50 placeholder-cyan-800/50 focus:ring-0 p-0 font-mono"
+                    />
+                </div>
             </div>
             {isModularMode && <div className={`absolute -top-6 left-0 text-xs font-bold tracking-widest ${activeDragElement === 'chat' ? 'text-green-500' : 'text-yellow-500/50'}`}>CHAT MODULE</div>}
         </div>
