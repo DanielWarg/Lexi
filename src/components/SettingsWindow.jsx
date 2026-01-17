@@ -161,8 +161,8 @@ const SettingsWindow = ({
                 </select>
             </div>
 
-            {/* Cursor Section */}
-            <div className="mb-6">
+            {/* DISABLED FOR REMOVAL - Cursor Sensitivity */}
+            {/* <div className="mb-6">
                 <div className="flex justify-between mb-2">
                     <h3 className="text-cyan-400 font-bold text-xs uppercase tracking-wider opacity-80">Cursor Sensitivity</h3>
                     <span className="text-xs text-cyan-500">{cursorSensitivity}x</span>
@@ -176,10 +176,10 @@ const SettingsWindow = ({
                     onChange={(e) => setCursorSensitivity(parseFloat(e.target.value))}
                     className="w-full accent-cyan-400 cursor-pointer h-1 bg-gray-800 rounded-lg appearance-none"
                 />
-            </div>
+            </div> */}
 
-            {/* Gesture Control Section */}
-            <div className="mb-6">
+            {/* DISABLED FOR REMOVAL - Gesture Control Section */}
+            {/* <div className="mb-6">
                 <h3 className="text-cyan-400 font-bold mb-3 text-xs uppercase tracking-wider opacity-80">Gesture Control</h3>
                 <div className="flex items-center justify-between text-xs bg-gray-900/50 p-2 rounded border border-cyan-900/30">
                     <span className="text-cyan-100/80">Flip Camera Horizontal</span>
@@ -192,7 +192,7 @@ const SettingsWindow = ({
                         />
                     </button>
                 </div>
-            </div>
+            </div> */}
 
             {/* Tool Permissions Section */}
             <div className="mb-6">

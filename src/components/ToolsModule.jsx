@@ -87,8 +87,8 @@ const ToolsModule = ({
                     <Settings size={24} />
                 </button>
 
-                {/* Hand Tracking Toggle */}
-                <button
+                {/* Hand Tracking Toggle - DISABLED FOR REMOVAL */}
+                {/* <button
                     onClick={onToggleHand}
                     className={`p-3 rounded-full border-2 transition-all duration-300 ${isHandTrackingEnabled
                         ? 'border-orange-500 bg-orange-500/10 text-orange-500 hover:bg-orange-500/20 shadow-[0_0_15px_rgba(249,115,22,0.3)]'
@@ -96,7 +96,7 @@ const ToolsModule = ({
                         } `}
                 >
                     <Hand size={24} />
-                </button>
+                </button> */}
 
                 {/* Kasa Light Control */}
                 <button

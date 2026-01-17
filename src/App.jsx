@@ -799,7 +799,8 @@ function App() {
         }
 
 
-        // 3. Hand Tracking
+        // 3. Hand Tracking - DISABLED FOR REMOVAL
+        /* 
         let startTimeMs = performance.now();
         // Use Ref for toggle check
         if (isHandTrackingEnabledRef.current && handLandmarkerRef.current && videoRef.current.currentTime !== lastVideoTimeRef.current) {
@@ -1018,6 +1019,7 @@ function App() {
             }
 
         }
+        */
 
         // 4. FPS Calculation
         const now = performance.now();
@@ -1366,8 +1368,8 @@ function App() {
 
             {/* --- PREMIUM UI LAYER --- */}
 
-            {/* Hand Cursor - Only show if tracking is enabled */}
-            {isVideoOn && isHandTrackingEnabled && (
+            {/* Hand Cursor - DISABLED FOR REMOVAL */}
+            {/* {isVideoOn && isHandTrackingEnabled && (
                 <div
                     className={`fixed w-6 h-6 border-2 rounded-full pointer-events-none z-[100] transition-transform duration-75 ${isPinching ? 'bg-cyan-400 border-cyan-400 scale-75 shadow-[0_0_15px_rgba(34,211,238,0.8)]' : 'border-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.3)]'}`}
                     style={{
@@ -1376,10 +1378,9 @@ function App() {
                         transform: 'translate(-50%, -50%)'
                     }}
                 >
-                    {/* Center Dot for precision */}
                     <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
                 </div>
-            )}
+            )} */}
 
             {/* Background Grid/Effects - ALIVE BACKGROUND (Fixed: Static opacity) */}
             <div
