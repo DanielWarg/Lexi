@@ -1146,7 +1146,8 @@ class AudioLoop:
             
             # PERFORMANCE DEBUG
             queue_size = self.audio_in_queue.qsize()
-            print(f"[PERF] Audio chunk received. Queue size: {queue_size}, is_speaking: {self.is_speaking}")
+            if queue_size % 20 == 0:  # Log every 20th chunk to reduce spam
+                print(f"[PERF] Audio chunk. Queue size: {queue_size}")
             
             # Set speaking flag when we start playing audio
             self.is_speaking = True
@@ -1155,15 +1156,14 @@ class AudioLoop:
                 self.on_audio_data(bytestream)
             await asyncio.to_thread(stream.write, bytestream)
             
-            # Add small delay to let audio finish playing
-            await asyncio.sleep(0.1)
+            # NO DELAY - let audio play as fast as possible
             
             # Check if queue is empty - if so, we're done speaking
             if self.audio_in_queue.empty():
-                # Wait a bit longer to ensure all audio is played
-                await asyncio.sleep(0.5)
+                # Short wait to ensure last chunk finishes
+                await asyncio.sleep(0.2)
                 self.is_speaking = False
-                print("[PERF] is_speaking set to False - mic re-enabled")
+                print("[PERF] Speaking done - mic re-enabled")
 
     async def get_frames(self):
         cap = await asyncio.to_thread(cv2.VideoCapture, 0, cv2.CAP_AVFOUNDATION)
