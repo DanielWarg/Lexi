@@ -8,7 +8,7 @@ import BrowserWindow from './components/BrowserWindow';
 import ChatModule from './components/ChatModule';
 import ToolsModule from './components/ToolsModule';
 import { Mic, MicOff, Settings, X, Minus, Power, Video, VideoOff, Layout, Hand, Printer, Clock } from 'lucide-react';
-import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
+// import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision'; // DISABLED
 // MemoryPrompt removed - memory is now actively saved to project
 import ConfirmationPopup from './components/ConfirmationPopup';
 import AuthLock from './components/AuthLock';
