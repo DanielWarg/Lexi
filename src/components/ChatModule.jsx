@@ -27,7 +27,7 @@ const ChatModule = ({
             id="chat"
             onMouseDown={onMouseDown}
             className={`absolute px-6 py-4 pointer-events-auto transition-all duration-200 
-            backdrop-blur-xl bg-black/40 border border-white/10 shadow-2xl rounded-2xl
+            bg-black/80 border border-white/10 shadow-lg rounded-2xl
             ${isModularMode ? (activeDragElement === 'chat' ? 'ring-2 ring-green-500' : 'ring-1 ring-yellow-500/30') : ''}
         `}
             style={{
@@ -38,7 +38,7 @@ const ChatModule = ({
                 height: height
             }}
         >
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none mix-blend-overlay"></div>
+            {/* Removed heavy noise texture and mix-blend-mode */}
 
             <div
                 className="flex flex-col gap-3 overflow-y-auto mb-4 scrollbar-hide mask-image-gradient relative z-10"
