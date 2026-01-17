@@ -16,9 +16,13 @@ Idag har fokus varit på att städa upp projektet, optimera prestanda och byta i
 *   **Browser Agent:** Behållen som kärnfunktionalitet.
 
 ### 🎭 Persona & Identitet
+*   **Ny System Prompt (Ninja-psykologi™):**
+    *   Implementerat "Lexi Tänkpartner"-persona fullt ut.
+    *   Lagt till "Ninja-psykologi™"-instruktioner: Fånga intuition, bekräfta mönster, ingen meta-kommentar.
+    *   Tonalitet: Varm, kvick "Michelin-stjärna i organisationspsykologi" (inspirerad av "Dagens Meny"-metaforer).
 *   **Nytt Namn:** Lexi (ersätter A.D.A).
-*   **Ny System Prompt:** "Tänkpartner" (Ann-Christin) - Alltid svenska, varm och professionell.
 *   **UI:** Uppdaterat alla synliga texter till "Lexi".
+
 
 ### ⚡ Prestanda & Upplevelse
 *   **Audio Lag Fix:** Implementerat `is_speaking`-flagga som tystar mikrofonen medan Lexi pratar (löser eko/feedback-loop).
