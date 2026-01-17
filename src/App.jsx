@@ -689,11 +689,16 @@ function App() {
             sourceRef.current = audioContextRef.current.createMediaStreamSource(stream);
             sourceRef.current.connect(analyserRef.current);
 
+            let frameCount = 0;
             const updateMicData = () => {
                 if (!analyserRef.current) return;
-                const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-                analyserRef.current.getByteFrequencyData(dataArray);
-                setMicAudioData(Array.from(dataArray));
+                frameCount++;
+                // Only update React state every 4th frame (~15fps) to reduce re-renders
+                if (frameCount % 4 === 0) {
+                    const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+                    analyserRef.current.getByteFrequencyData(dataArray);
+                    setMicAudioData(Array.from(dataArray));
+                }
                 animationFrameRef.current = requestAnimationFrame(updateMicData);
             };
 

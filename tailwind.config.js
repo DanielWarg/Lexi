@@ -15,6 +15,15 @@ module.exports = {
                     500: '#06b6d4',
                     900: '#164e63',
                 }
+            },
+            animation: {
+                'breathe': 'breathe 3s ease-in-out infinite',
+            },
+            keyframes: {
+                breathe: {
+                    '0%, 100%': { transform: 'scale(1)', opacity: '0.5' },
+                    '50%': { transform: 'scale(1.05)', opacity: '0.8' },
+                }
             }
         },
     },

@@ -59,11 +59,12 @@
 
 ### Current State (2026-01-17)
 - **Project Name:** Lexi (formerly A.D.A)
-- **Language:** Swedish responses enforced
+- **Language:** Swedish responses enforced (System Prompt updated)
 - **WebAgent:** ✅ Active and functional (core feature - DO NOT REMOVE)
 - **PrinterAgent:** ❌ Removed
-- **Hand Gestures:** ❌ Being removed (in progress)
+- **Hand Gestures:** ❌ Removed (UI, logic, props disabled; state remains for safety)
 - **CAD:** ✅ Active (scheduled for removal)
+- **Performance:** ✅ Optimized (Audio lag fixed, UI animations converted to CSS)
 
 ### Key Architectural Insight: React Prop Dependencies
 When adding or removing features, follow this order to avoid black screen:
