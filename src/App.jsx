@@ -1523,10 +1523,10 @@ function App() {
                         setSelectedSpeakerId={setSelectedSpeakerId}
                         selectedWebcamId={selectedWebcamId}
                         setSelectedWebcamId={setSelectedWebcamId}
-                        cursorSensitivity={cursorSensitivity}
-                        setCursorSensitivity={setCursorSensitivity}
-                        isCameraFlipped={isCameraFlipped}
-                        setIsCameraFlipped={setIsCameraFlipped}
+                        /* cursorSensitivity={cursorSensitivity} - DISABLED */
+                        /* setCursorSensitivity={setCursorSensitivity} - DISABLED */
+                        /* isCameraFlipped={isCameraFlipped} - DISABLED */
+                        /* setIsCameraFlipped={setIsCameraFlipped} - DISABLED */
                         handleFileUpload={handleFileUpload}
                         onClose={() => setShowSettings(false)}
                     />
