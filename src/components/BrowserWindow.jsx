@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Globe, X } from 'lucide-react';
+import { Globe, X, Send } from 'lucide-react';
 
 const BrowserWindow = ({ imageSrc, logs, onClose, socket }) => {
     const [input, setInput] = React.useState('');
@@ -16,27 +16,36 @@ const BrowserWindow = ({ imageSrc, logs, onClose, socket }) => {
         if (!input.trim()) return;
         if (socket) {
             socket.emit('prompt_web_agent', { prompt: input });
-            // Optionally add a local log
-            // But usually backend sends logs back.
         }
         setInput('');
     };
 
     return (
-        <div className="w-full h-full relative group bg-[#111] rounded-lg overflow-hidden flex flex-col border border-gray-800">
-            {/* Header Bar - Drag Handle */}
-            <div data-drag-handle className="h-8 bg-[#222] border-b border-gray-700 flex items-center justify-between px-2 shrink-0 cursor-grab active:cursor-grabbing">
-                <div className="flex items-center gap-2 text-gray-300 text-xs font-mono">
-                    <Globe size={14} className="text-cyan-500" />
-                    <span>WEB_AGENT_VIEW</span>
+        <div className="w-full h-full relative flex flex-col bg-black/90 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.8)]">
+            {/* Header Bar */}
+            <div
+                data-drag-handle
+                className="h-12 bg-gradient-to-r from-blue-900/30 to-cyan-900/20 border-b border-white/10 flex items-center justify-between px-4 shrink-0 cursor-grab active:cursor-grabbing"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-500/20 rounded-lg">
+                        <Globe size={18} className="text-blue-400" />
+                    </div>
+                    <div>
+                        <span className="text-white font-semibold tracking-wide">Web Agent</span>
+                        <span className="text-white/40 text-xs ml-2">Browser Automation</span>
+                    </div>
                 </div>
-                <button onClick={onClose} className="hover:bg-red-500/20 text-gray-400 hover:text-red-400 p-1 rounded transition-colors">
-                    <X size={14} />
+                <button
+                    onClick={onClose}
+                    className="p-2 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded-lg transition-all duration-200 hover:scale-105"
+                >
+                    <X size={18} />
                 </button>
             </div>
 
-            {/* Browser Content */}
-            <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
+            {/* Browser Content - Main View */}
+            <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden min-h-0">
                 {imageSrc ? (
                     <img
                         src={`data:image/jpeg;base64,${imageSrc}`}
@@ -44,33 +53,46 @@ const BrowserWindow = ({ imageSrc, logs, onClose, socket }) => {
                         className="max-w-full max-h-full object-contain"
                     />
                 ) : (
-                    <div className="flex flex-col items-center gap-2">
-                        <div className="text-gray-600 text-xs font-mono animate-pulse">Waiting for browser stream...</div>
+                    <div className="flex flex-col items-center gap-4 text-gray-500">
+                        <Globe size={48} className="opacity-20 animate-pulse" />
+                        <div className="text-sm font-mono">Waiting for browser stream...</div>
+                        <div className="text-xs text-gray-600">Use the input below to give Web Agent a task</div>
                     </div>
                 )}
             </div>
 
             {/* Input Bar */}
-            <div className="h-10 bg-[#161616] border-t border-gray-800 flex items-center px-2 gap-2">
-                <span className="text-cyan-500 font-mono text-xs">{'>'}</span>
+            <div className="h-14 bg-black/80 border-t border-white/10 flex items-center px-4 gap-3">
+                <span className="text-cyan-500 font-mono text-sm">{'>'}</span>
                 <input
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                    placeholder="Enter command for Web Agent..."
-                    className="flex-1 bg-transparent border-none outline-none text-gray-300 text-xs font-mono placeholder-gray-600"
+                    placeholder="Tell Web Agent what to do..."
+                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 outline-none text-white text-sm font-mono placeholder-gray-500 focus:border-cyan-500/50 transition-colors"
                 />
+                <button
+                    onClick={handleSend}
+                    className="p-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg transition-all duration-200 hover:scale-105"
+                >
+                    <Send size={18} />
+                </button>
             </div>
 
-            {/* Logs Overlay (Bottom) */}
-            <div className="h-24 bg-black/90 backdrop-blur border-t border-gray-800 p-2 font-mono text-[10px] overflow-y-auto text-green-500/80">
-                {logs.map((log, i) => (
-                    <div key={i} className="mb-1 border-l-2 border-cyan-900 pl-1 break-words">
-                        <span className="opacity-50 mr-2">[{new Date().toLocaleTimeString().split(' ')[0]}]</span>
-                        {log}
-                    </div>
-                ))}
+            {/* Logs Panel */}
+            <div className="h-32 bg-black/95 border-t border-white/10 p-3 font-mono text-xs overflow-y-auto scrollbar-hide">
+                <div className="text-white/30 text-[10px] uppercase tracking-wider mb-2">Activity Log</div>
+                {logs.length === 0 ? (
+                    <div className="text-gray-600 italic">No activity yet...</div>
+                ) : (
+                    logs.map((log, i) => (
+                        <div key={i} className="mb-1.5 border-l-2 border-cyan-500/30 pl-2 text-green-400/80 break-words">
+                            <span className="text-cyan-600/50 mr-2">[{new Date().toLocaleTimeString().split(' ')[0]}]</span>
+                            {log}
+                        </div>
+                    ))
+                )}
                 <div ref={logsEndRef} />
             </div>
         </div>

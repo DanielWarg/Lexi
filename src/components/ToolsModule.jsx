@@ -1,28 +1,56 @@
 import React from 'react';
-import { Mic, MicOff, Settings, Power, Video, VideoOff, Hand, Lightbulb, Printer, Globe, Box } from 'lucide-react';
+import { Mic, MicOff, Settings, Power, Video, VideoOff, Lightbulb, Printer, Globe } from 'lucide-react';
+
+const ToolButton = ({ onClick, disabled, active, activeColor, children, title }) => {
+    const baseClasses = "p-2 rounded-lg transition-all duration-200 relative group";
+
+    const getColorClasses = () => {
+        if (disabled) return "text-gray-700 cursor-not-allowed opacity-50";
+        if (active) {
+            switch (activeColor) {
+                case 'green': return "text-green-400 bg-green-500/20 shadow-[0_0_12px_rgba(34,197,94,0.4)]";
+                case 'red': return "text-red-400 bg-red-500/20 shadow-[0_0_12px_rgba(239,68,68,0.4)]";
+                case 'cyan': return "text-cyan-400 bg-cyan-500/20 shadow-[0_0_12px_rgba(6,182,212,0.4)]";
+                case 'purple': return "text-purple-400 bg-purple-500/20 shadow-[0_0_12px_rgba(168,85,247,0.4)]";
+                case 'yellow': return "text-yellow-300 bg-yellow-500/20 shadow-[0_0_12px_rgba(253,224,71,0.4)]";
+                case 'blue': return "text-blue-400 bg-blue-500/20 shadow-[0_0_12px_rgba(96,165,250,0.4)]";
+                default: return "text-cyan-400 bg-cyan-500/20";
+            }
+        }
+        return "text-cyan-600 hover:text-cyan-400 hover:bg-white/5";
+    };
+
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            title={title}
+            className={`${baseClasses} ${getColorClasses()}`}
+        >
+            {/* Hover glow effect */}
+            <div className="absolute inset-0 rounded-lg bg-white/0 group-hover:bg-white/5 transition-all duration-200" />
+            <div className="relative z-10">
+                {children}
+            </div>
+        </button>
+    );
+};
 
 const ToolsModule = ({
     isConnected,
     isMuted,
     isVideoOn,
-    isHandTrackingEnabled,
     showSettings,
     onTogglePower,
     onToggleMute,
     onToggleVideo,
     onToggleSettings,
-
-    onToggleHand,
     onToggleKasa,
     showKasaWindow,
     onTogglePrinter,
     showPrinterWindow,
-    onToggleCad,
-    showCadWindow,
     onToggleBrowser,
     showBrowserWindow,
-    activeDragElement,
-
     position,
     onMouseDown
 }) => {
@@ -30,8 +58,7 @@ const ToolsModule = ({
         <div
             id="tools"
             onMouseDown={onMouseDown}
-            className={`absolute px-6 py-3 transition-all duration-200 
-                        backdrop-blur-xl bg-black/40 border border-white/10 shadow-2xl rounded-full`}
+            className="absolute transition-all duration-300 ease-out"
             style={{
                 left: position.x,
                 top: position.y,
@@ -39,108 +66,83 @@ const ToolsModule = ({
                 pointerEvents: 'auto'
             }}
         >
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none mix-blend-overlay rounded-full"></div>
+            {/* TARS-inspired monolithic bar */}
+            <div className="flex items-center gap-1 px-3 py-2 backdrop-blur-xl bg-black/60 border border-white/10 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                {/* Subtle noise texture */}
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none mix-blend-overlay rounded-xl" />
 
-            <div className="flex justify-center gap-6 relative z-10">
-                {/* Power Button */}
-                <button
-                    onClick={onTogglePower}
-                    className={`p-3 rounded-full border-2 transition-all duration-300 ${isConnected
-                        ? 'border-green-500 bg-green-500/10 text-green-500 hover:bg-green-500/20 shadow-[0_0_15px_rgba(34,197,94,0.3)]'
-                        : 'border-gray-600 bg-gray-600/10 text-gray-500 hover:bg-gray-600/20'
-                        } `}
-                >
-                    <Power size={24} />
-                </button>
+                {/* Primary controls group */}
+                <div className="flex items-center gap-1 relative z-10">
+                    <ToolButton
+                        onClick={onTogglePower}
+                        active={isConnected}
+                        activeColor="green"
+                        title={isConnected ? "Disconnect" : "Connect"}
+                    >
+                        <Power size={20} />
+                    </ToolButton>
 
-                {/* Mute Button */}
-                <button
-                    onClick={onToggleMute}
-                    disabled={!isConnected}
-                    className={`p-3 rounded-full border-2 transition-all duration-300 ${!isConnected
-                        ? 'border-gray-800 text-gray-800 cursor-not-allowed'
-                        : isMuted
-                            ? 'border-red-500 bg-red-500/10 text-red-500 hover:bg-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                            : 'border-cyan-500 bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.3)]'
-                        } `}
-                >
-                    {isMuted ? <MicOff size={24} /> : <Mic size={24} />}
-                </button>
+                    <ToolButton
+                        onClick={onToggleMute}
+                        disabled={!isConnected}
+                        active={!isMuted && isConnected}
+                        activeColor={isMuted ? "red" : "cyan"}
+                        title={isMuted ? "Unmute" : "Mute"}
+                    >
+                        {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+                    </ToolButton>
 
-                {/* Video Button */}
-                <button
-                    onClick={onToggleVideo}
-                    className={`p-3 rounded-full border-2 transition-all duration-300 ${isVideoOn
-                        ? 'border-purple-500 bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.3)]'
-                        : 'border-cyan-900 text-cyan-700 hover:border-cyan-500 hover:text-cyan-500'
-                        } `}
-                >
-                    {isVideoOn ? <Video size={24} /> : <VideoOff size={24} />}
-                </button>
+                    <ToolButton
+                        onClick={onToggleVideo}
+                        active={isVideoOn}
+                        activeColor="purple"
+                        title={isVideoOn ? "Stop Camera" : "Start Camera"}
+                    >
+                        {isVideoOn ? <Video size={20} /> : <VideoOff size={20} />}
+                    </ToolButton>
 
-                {/* Settings Button */}
-                <button
-                    onClick={onToggleSettings}
-                    className={`p-3 rounded-full border-2 transition-all ${showSettings ? 'border-cyan-400 text-cyan-400 bg-cyan-900/20' : 'border-cyan-900 text-cyan-700 hover:border-cyan-500 hover:text-cyan-500'
-                        } `}
-                >
-                    <Settings size={24} />
-                </button>
+                    <ToolButton
+                        onClick={onToggleSettings}
+                        active={showSettings}
+                        activeColor="cyan"
+                        title="Settings"
+                    >
+                        <Settings size={20} />
+                    </ToolButton>
+                </div>
 
-                {/* Hand Tracking Toggle - DISABLED FOR REMOVAL */}
-                {/* <button
-                    onClick={onToggleHand}
-                    className={`p-3 rounded-full border-2 transition-all duration-300 ${isHandTrackingEnabled
-                        ? 'border-orange-500 bg-orange-500/10 text-orange-500 hover:bg-orange-500/20 shadow-[0_0_15px_rgba(249,115,22,0.3)]'
-                        : 'border-cyan-900 text-cyan-700 hover:border-cyan-500 hover:text-cyan-500'
-                        } `}
-                >
-                    <Hand size={24} />
-                </button> */}
+                {/* Separator */}
+                <div className="w-px h-6 bg-white/10 mx-1" />
 
-                {/* Kasa Light Control */}
-                <button
-                    onClick={onToggleKasa}
-                    className={`p-3 rounded-full border-2 transition-all duration-300 ${showKasaWindow
-                        ? 'border-yellow-300 bg-yellow-300/10 text-yellow-300 hover:bg-yellow-300/20 shadow-[0_0_15px_rgba(253,224,71,0.3)]'
-                        : 'border-cyan-900 text-cyan-700 hover:border-cyan-500 hover:text-cyan-500'
-                        } `}
-                >
-                    <Lightbulb size={24} />
-                </button>
+                {/* Secondary controls group */}
+                <div className="flex items-center gap-1 relative z-10">
+                    <ToolButton
+                        onClick={onToggleKasa}
+                        active={showKasaWindow}
+                        activeColor="yellow"
+                        title="Smart Lights"
+                    >
+                        <Lightbulb size={20} />
+                    </ToolButton>
 
-                {/* 3D Printer Control */}
-                <button
-                    onClick={onTogglePrinter}
-                    className={`p-3 rounded-full border-2 transition-all duration-300 ${showPrinterWindow
-                        ? 'border-green-400 bg-green-400/10 text-green-400 hover:bg-green-400/20'
-                        : 'border-cyan-900 text-cyan-700 hover:border-green-500 hover:text-green-500'
-                        } `}
-                >
-                    <Printer size={24} />
-                </button>
+                    <ToolButton
+                        onClick={onTogglePrinter}
+                        active={showPrinterWindow}
+                        activeColor="green"
+                        title="3D Printers"
+                    >
+                        <Printer size={20} />
+                    </ToolButton>
 
-                {/* CAD Agent Toggle - DISABLED FOR REMOVAL */}
-                {/* <button
-                    onClick={onToggleCad}
-                    className={`p-3 rounded-full border-2 transition-all duration-300 ${showCadWindow
-                        ? 'border-cyan-400 bg-cyan-400/10 text-cyan-400 hover:bg-cyan-400/20 shadow-[0_0_15px_rgba(34,211,238,0.3)]'
-                        : 'border-cyan-900 text-cyan-700 hover:border-cyan-500 hover:text-cyan-500'
-                        } `}
-                >
-                    <Box size={24} />
-                </button> */}
-
-                {/* Web Agent Toggle */}
-                <button
-                    onClick={onToggleBrowser}
-                    className={`p-3 rounded-full border-2 transition-all duration-300 ${showBrowserWindow
-                        ? 'border-blue-400 bg-blue-400/10 text-blue-400 hover:bg-blue-400/20 shadow-[0_0_15px_rgba(96,165,250,0.3)]'
-                        : 'border-cyan-900 text-cyan-700 hover:border-blue-500 hover:text-blue-500'
-                        } `}
-                >
-                    <Globe size={24} />
-                </button>
+                    <ToolButton
+                        onClick={onToggleBrowser}
+                        active={showBrowserWindow}
+                        activeColor="blue"
+                        title="Web Agent"
+                    >
+                        <Globe size={20} />
+                    </ToolButton>
+                </div>
             </div>
         </div>
     );

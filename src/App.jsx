@@ -104,7 +104,7 @@ function App() {
         chat: { w: 550, h: 220 },
         tools: { w: 500, h: 80 }, // Approx
         cad: { w: 400, h: 400 },
-        browser: { w: 550, h: 380 },
+        browser: { w: Math.round(window.innerWidth * 0.9), h: Math.round(window.innerHeight * 0.85) },
         video: { w: 320, h: 180 },
         kasa: { w: 300, h: 380 }, // Approx
         printer: { w: 380, h: 380 } // Approx
