@@ -11,12 +11,13 @@
   - Run single file: `.venv/bin/pytest backend/tests/test_filename.py`
   - Run single test: `.venv/bin/pytest backend/tests/test_filename.py::test_function_name`
 
-### Frontend (`frontend/`)
-- **Stack:** React + Vite + Electron
-- **Install:** `cd frontend && npm install`
-- **Dev Server:** `cd frontend && npm run dev`
-- **Lint:** `cd frontend && npm run lint` (if configured in package.json)
-- **Build:** `cd frontend && npm run build`
+### Frontend (`src/`)
+- **Stack:** React + Vite + **Tauri** (migrated from Electron 2026-01-18)
+- **Install:** `npm install`
+- **Dev Server (Tauri):** `npx tauri dev`
+- **Dev Server (Electron - fallback):** `npm run dev`
+- **Lint:** `npm run lint` (if configured)
+- **Build:** `npm run build`
 
 ---
 
@@ -45,8 +46,9 @@
 
 ### Project Structure
 - `backend/` - All Python logic, agents `(printer_agent.py, cad_agent.py)`, and server.
-- `frontend/src/components/` - React UI components.
-- `frontend/electron/` - Electron main process.
+- `src/components/` - React UI components.
+- `src-tauri/` - Tauri native shell (Rust).
+- `electron/` - Electron main process (deprecated fallback).
 
 ### Special Rules (Agentic Context)
 - **Surgical Changes:** When debugging, create a reproduction script or minimal test case first.
@@ -57,8 +59,9 @@
 
 ## 3. Project Status & Documentation
 
-### Current State (2026-01-17)
+### Current State (2026-01-18)
 - **Project Name:** Lexi (formerly A.D.A)
+- **Frontend:** Tauri (migrated from Electron)
 - **Language:** Swedish responses enforced (System Prompt updated)
 - **WebAgent:** ✅ Active and functional (core feature - DO NOT REMOVE)
 - **PrinterAgent:** ❌ Removed
@@ -86,3 +89,17 @@ When adding or removing features, follow this order to avoid black screen:
 - `v1.0-webagent-working`: Stable base with WebAgent
 - `v1.1-lag-debugging`: Debug state for audio lag investigation
 - `stable-voice-restore-point`: (Tag) Verified working state before CAD cleanup (Voice OK, CAD UI Hidden)
+
+---
+
+## 4. Next Steps
+
+### 🎯 Active: UI Revamp
+See **[docs/UI_REVAMP_PLAN.md](docs/UI_REVAMP_PLAN.md)** for full implementation plan.
+
+**Priorities:**
+1. ✅ Everything functional
+2. 🔄 Lexi Sphere — Breathing 3D visualization
+3. 🔄 Compact bottom menu — TARS-inspired
+4. 🔄 Unified popups — WebAgent at 90% viewport
+
