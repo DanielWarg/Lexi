@@ -109,9 +109,9 @@ Reduce toolbar to ~50% width with TARS-inspired design.
 ---
 
 ## Build Order
-1. [ ] Lexi Sphere (Visualizer.jsx)
-2. [ ] Bottom Menu (ToolsModule.jsx)
-3. [ ] BrowserWindow (90% size)
+1. [x] Lexi Sphere (Visualizer.jsx)
+2. [x] Bottom Menu (ToolsModule.jsx)
+3. [x] BrowserWindow (90% size)
 4. [ ] Other popup headers
 5. [ ] Test all states
 6. [ ] Polish animations

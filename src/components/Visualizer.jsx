@@ -1,178 +1,4 @@
-import React, { useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
-
-// Shader for the glowing sphere
-const vertexShader = `
-    varying vec3 vNormal;
-    varying vec3 vPosition;
-    uniform float uTime;
-    uniform float uAudioIntensity;
-    uniform float uBreathPhase;
-    
-    void main() {
-        vNormal = normalize(normalMatrix * normal);
-        vPosition = position;
-        
-        // Breathing deformation
-        float breath = sin(uBreathPhase) * 0.08;
-        
-        // Audio-reactive deformation
-        float audioWarp = uAudioIntensity * 0.15;
-        
-        // Organic noise deformation
-        float noise = sin(position.x * 3.0 + uTime * 0.5) * 
-                     sin(position.y * 3.0 + uTime * 0.4) * 
-                     sin(position.z * 3.0 + uTime * 0.6) * 0.05;
-        
-        vec3 newPosition = position * (1.0 + breath + audioWarp + noise);
-        
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
-    }
-`;
-
-const fragmentShader = `
-    varying vec3 vNormal;
-    varying vec3 vPosition;
-    uniform float uTime;
-    uniform float uAudioIntensity;
-    uniform float uBreathPhase;
-    uniform vec3 uColor;
-    
-    void main() {
-        // Fresnel effect for edge glow
-        vec3 viewDirection = normalize(cameraPosition - vPosition);
-        float fresnel = pow(1.0 - dot(viewDirection, vNormal), 2.5);
-        
-        // Core color with breathing pulse
-        float breathPulse = (sin(uBreathPhase) + 1.0) * 0.5;
-        float audioPulse = uAudioIntensity;
-        
-        // Mix base color with intensity
-        vec3 coreColor = uColor * (0.3 + breathPulse * 0.3 + audioPulse * 0.4);
-        vec3 glowColor = uColor * 1.5;
-        
-        // Final color: core + fresnel glow
-        vec3 finalColor = mix(coreColor, glowColor, fresnel);
-        
-        // Alpha based on fresnel for ethereal look
-        float alpha = 0.6 + fresnel * 0.4;
-        
-        gl_FragColor = vec4(finalColor, alpha);
-    }
-`;
-
-// Outer glow ring shader
-const glowVertexShader = `
-    varying vec2 vUv;
-    void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-`;
-
-const glowFragmentShader = `
-    varying vec2 vUv;
-    uniform float uTime;
-    uniform float uBreathPhase;
-    uniform float uAudioIntensity;
-    uniform vec3 uColor;
-    
-    void main() {
-        vec2 center = vec2(0.5, 0.5);
-        float dist = distance(vUv, center);
-        
-        // Ring parameters
-        float breathPulse = sin(uBreathPhase) * 0.03;
-        float ringRadius = 0.35 + breathPulse + uAudioIntensity * 0.05;
-        float ringWidth = 0.03 + uAudioIntensity * 0.02;
-        
-        // Create ring
-        float ring = smoothstep(ringRadius - ringWidth, ringRadius, dist) *
-                    (1.0 - smoothstep(ringRadius, ringRadius + ringWidth, dist));
-        
-        // Outer glow
-        float glow = exp(-pow(dist - ringRadius, 2.0) * 30.0) * 0.5;
-        
-        float alpha = ring + glow;
-        vec3 color = uColor * (1.0 + uAudioIntensity * 0.5);
-        
-        gl_FragColor = vec4(color, alpha * 0.8);
-    }
-`;
-
-const LexiSphere = ({ audioIntensity = 0, isListening = false }) => {
-    const meshRef = useRef();
-    const glowRef = useRef();
-    const startTime = useRef(Date.now());
-
-    // Breathing speed: slow when sleeping, faster when listening
-    const breathSpeed = isListening ? 1.5 : 0.4;
-
-    const uniforms = useMemo(() => ({
-        uTime: { value: 0 },
-        uAudioIntensity: { value: 0 },
-        uBreathPhase: { value: 0 },
-        uColor: { value: new THREE.Color(0x22d3ee) } // cyan-400
-    }), []);
-
-    const glowUniforms = useMemo(() => ({
-        uTime: { value: 0 },
-        uAudioIntensity: { value: 0 },
-        uBreathPhase: { value: 0 },
-        uColor: { value: new THREE.Color(0x22d3ee) }
-    }), []);
-
-    useFrame(() => {
-        const elapsed = (Date.now() - startTime.current) / 1000;
-
-        // Update sphere uniforms
-        if (meshRef.current) {
-            meshRef.current.material.uniforms.uTime.value = elapsed;
-            meshRef.current.material.uniforms.uAudioIntensity.value = audioIntensity;
-            meshRef.current.material.uniforms.uBreathPhase.value = elapsed * breathSpeed;
-
-            // Subtle rotation
-            meshRef.current.rotation.y = elapsed * 0.1;
-            meshRef.current.rotation.x = Math.sin(elapsed * 0.2) * 0.1;
-        }
-
-        // Update glow ring uniforms
-        if (glowRef.current) {
-            glowRef.current.material.uniforms.uTime.value = elapsed;
-            glowRef.current.material.uniforms.uAudioIntensity.value = audioIntensity;
-            glowRef.current.material.uniforms.uBreathPhase.value = elapsed * breathSpeed;
-        }
-    });
-
-    return (
-        <>
-            {/* Main sphere */}
-            <mesh ref={meshRef}>
-                <sphereGeometry args={[1, 64, 64]} />
-                <shaderMaterial
-                    vertexShader={vertexShader}
-                    fragmentShader={fragmentShader}
-                    uniforms={uniforms}
-                    transparent={true}
-                    side={THREE.DoubleSide}
-                />
-            </mesh>
-
-            {/* Outer glow ring */}
-            <mesh ref={glowRef} position={[0, 0, -0.1]} scale={[3, 3, 1]}>
-                <planeGeometry args={[2, 2]} />
-                <shaderMaterial
-                    vertexShader={glowVertexShader}
-                    fragmentShader={glowFragmentShader}
-                    uniforms={glowUniforms}
-                    transparent={true}
-                    depthWrite={false}
-                />
-            </mesh>
-        </>
-    );
-};
+import React, { useMemo } from 'react';
 
 const Visualizer = ({ audioData = [], isListening = false, intensity = 0, width = 600, height = 400 }) => {
     // Calculate audio intensity from audioData array
@@ -182,30 +8,234 @@ const Visualizer = ({ audioData = [], isListening = false, intensity = 0, width 
         return Math.min(1, sum / (audioData.length * 128));
     }, [audioData, intensity]);
 
+    const baseSize = Math.min(width, height) * 0.7;
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Ring configurations: radius, width, speed, segments
+    const rings = [
+        { radius: baseSize * 0.45, width: 3, speed: 20, segments: 60, dashed: true },
+        { radius: baseSize * 0.40, width: 2, speed: -15, segments: 40, dashed: false },
+        { radius: baseSize * 0.35, width: 4, speed: 25, segments: 24, dashed: true },
+        { radius: baseSize * 0.28, width: 2, speed: -30, segments: 12, dashed: false },
+        { radius: baseSize * 0.22, width: 3, speed: 35, segments: 8, dashed: true },
+    ];
+
+    // Generate tick marks for each ring
+    const generateTicks = (ring, index) => {
+        const ticks = [];
+        const tickCount = ring.segments;
+        for (let i = 0; i < tickCount; i++) {
+            const angle = (360 / tickCount) * i;
+            const isLong = i % 4 === 0;
+            const innerRadius = ring.radius - (isLong ? 12 : 6);
+            const outerRadius = ring.radius + (isLong ? 4 : 2);
+
+            ticks.push(
+                <line
+                    key={`tick-${index}-${i}`}
+                    x1={centerX + innerRadius * Math.cos((angle * Math.PI) / 180)}
+                    y1={centerY + innerRadius * Math.sin((angle * Math.PI) / 180)}
+                    x2={centerX + outerRadius * Math.cos((angle * Math.PI) / 180)}
+                    y2={centerY + outerRadius * Math.sin((angle * Math.PI) / 180)}
+                    stroke="rgba(34, 211, 238, 0.4)"
+                    strokeWidth={isLong ? 2 : 1}
+                />
+            );
+        }
+        return ticks;
+    };
+
+    // Generate arc segments
+    const generateArcSegments = (ring, index) => {
+        const segments = [];
+        const segmentCount = 6;
+        const gapAngle = 8;
+        const segmentAngle = (360 - gapAngle * segmentCount) / segmentCount;
+
+        for (let i = 0; i < segmentCount; i++) {
+            const startAngle = i * (segmentAngle + gapAngle) - 90;
+            const endAngle = startAngle + segmentAngle;
+
+            const startRad = (startAngle * Math.PI) / 180;
+            const endRad = (endAngle * Math.PI) / 180;
+
+            const x1 = centerX + ring.radius * Math.cos(startRad);
+            const y1 = centerY + ring.radius * Math.sin(startRad);
+            const x2 = centerX + ring.radius * Math.cos(endRad);
+            const y2 = centerY + ring.radius * Math.sin(endRad);
+
+            const largeArc = segmentAngle > 180 ? 1 : 0;
+
+            segments.push(
+                <path
+                    key={`arc-${index}-${i}`}
+                    d={`M ${x1} ${y1} A ${ring.radius} ${ring.radius} 0 ${largeArc} 1 ${x2} ${y2}`}
+                    fill="none"
+                    stroke={`rgba(34, 211, 238, ${0.3 + calculatedIntensity * 0.4})`}
+                    strokeWidth={ring.width}
+                    strokeLinecap="round"
+                />
+            );
+        }
+        return segments;
+    };
+
     return (
         <div className="relative flex items-center justify-center" style={{ width, height }}>
-            {/* 3D Canvas */}
-            <Canvas
-                camera={{ position: [0, 0, 3.5], fov: 50 }}
-                style={{ background: 'transparent' }}
-                gl={{ alpha: true, antialias: true }}
-            >
-                <ambientLight intensity={0.2} />
-                <pointLight position={[5, 5, 5]} intensity={0.5} />
-                <LexiSphere
-                    audioIntensity={calculatedIntensity}
-                    isListening={isListening}
-                />
-            </Canvas>
-
-            {/* Central Logo/Text overlay */}
+            {/* Background glow */}
             <div
-                className={`absolute text-cyan-100 font-bold tracking-widest drop-shadow-[0_0_15px_rgba(34,211,238,0.8)] z-10 pointer-events-none ${isListening ? 'animate-pulse' : ''
+                className="absolute rounded-full transition-all duration-300"
+                style={{
+                    width: baseSize * 0.6,
+                    height: baseSize * 0.6,
+                    background: `radial-gradient(circle, rgba(34, 211, 238, ${0.15 + calculatedIntensity * 0.2}) 0%, transparent 70%)`,
+                    filter: `blur(${20 + calculatedIntensity * 20}px)`,
+                }}
+            />
+
+            {/* SVG HUD */}
+            <svg
+                width={width}
+                height={height}
+                className="absolute"
+                style={{ overflow: 'visible' }}
+            >
+                <defs>
+                    {/* Glow filter */}
+                    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                        <feMerge>
+                            <feMergeNode in="coloredBlur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                {/* Outer static ring with tick marks */}
+                <g filter="url(#glow)">
+                    {rings.map((ring, i) => generateTicks(ring, i))}
+                </g>
+
+                {/* Rotating rings */}
+                {rings.map((ring, index) => (
+                    <g
+                        key={`ring-group-${index}`}
+                        style={{
+                            transformOrigin: `${centerX}px ${centerY}px`,
+                            animation: `spin${ring.speed > 0 ? '' : 'Reverse'} ${Math.abs(60 / ring.speed)}s linear infinite`,
+                        }}
+                    >
+                        {ring.dashed ? (
+                            <circle
+                                cx={centerX}
+                                cy={centerY}
+                                r={ring.radius}
+                                fill="none"
+                                stroke={`rgba(34, 211, 238, ${0.2 + calculatedIntensity * 0.3})`}
+                                strokeWidth={ring.width}
+                                strokeDasharray={`${ring.radius * 0.1} ${ring.radius * 0.05}`}
+                                filter="url(#glow)"
+                            />
+                        ) : (
+                            generateArcSegments(ring, index)
+                        )}
+                    </g>
+                ))}
+
+                {/* Inner core rings */}
+                <circle
+                    cx={centerX}
+                    cy={centerY}
+                    r={baseSize * 0.15}
+                    fill="none"
+                    stroke={`rgba(34, 211, 238, ${0.5 + calculatedIntensity * 0.5})`}
+                    strokeWidth={2}
+                    filter="url(#glow)"
+                />
+                <circle
+                    cx={centerX}
+                    cy={centerY}
+                    r={baseSize * 0.12}
+                    fill="none"
+                    stroke="rgba(34, 211, 238, 0.3)"
+                    strokeWidth={1}
+                />
+
+                {/* Core glow */}
+                <circle
+                    cx={centerX}
+                    cy={centerY}
+                    r={baseSize * 0.08}
+                    fill={`rgba(34, 211, 238, ${0.3 + calculatedIntensity * 0.4})`}
+                    filter="url(#glow)"
+                    className={isListening ? '' : 'animate-pulse'}
+                />
+
+                {/* Center bright point */}
+                <circle
+                    cx={centerX}
+                    cy={centerY}
+                    r={baseSize * 0.03}
+                    fill="rgba(200, 255, 255, 0.9)"
+                    filter="url(#glow)"
+                />
+
+                {/* Cross-hairs */}
+                <line
+                    x1={centerX - baseSize * 0.5}
+                    y1={centerY}
+                    x2={centerX - baseSize * 0.2}
+                    y2={centerY}
+                    stroke="rgba(34, 211, 238, 0.2)"
+                    strokeWidth={1}
+                />
+                <line
+                    x1={centerX + baseSize * 0.2}
+                    y1={centerY}
+                    x2={centerX + baseSize * 0.5}
+                    y2={centerY}
+                    stroke="rgba(34, 211, 238, 0.2)"
+                    strokeWidth={1}
+                />
+                <line
+                    x1={centerX}
+                    y1={centerY - baseSize * 0.5}
+                    x2={centerX}
+                    y2={centerY - baseSize * 0.2}
+                    stroke="rgba(34, 211, 238, 0.2)"
+                    strokeWidth={1}
+                />
+                <line
+                    x1={centerX}
+                    y1={centerY + baseSize * 0.2}
+                    x2={centerX}
+                    y2={centerY + baseSize * 0.5}
+                    stroke="rgba(34, 211, 238, 0.2)"
+                    strokeWidth={1}
+                />
+            </svg>
+
+            {/* Central Logo/Text */}
+            <div
+                className={`absolute text-cyan-100 font-bold tracking-widest drop-shadow-[0_0_15px_rgba(34,211,238,0.8)] z-10 ${isListening ? 'animate-pulse' : ''
                     }`}
-                style={{ fontSize: Math.min(width, height) * 0.08 }}
+                style={{ fontSize: Math.min(width, height) * 0.06 }}
             >
                 Lexi
             </div>
+
+            {/* CSS Keyframes */}
+            <style>{`
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                @keyframes spinReverse {
+                    from { transform: rotate(360deg); }
+                    to { transform: rotate(0deg); }
+                }
+            `}</style>
         </div>
     );
 };
