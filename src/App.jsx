@@ -93,7 +93,7 @@ function App() {
         visualizer: { x: window.innerWidth / 2, y: window.innerHeight / 2 - 150 },
         chat: { x: window.innerWidth / 2, y: window.innerHeight / 2 + 100 },
         cad: { x: window.innerWidth / 2 + 300, y: window.innerHeight / 2 },
-        browser: { x: window.innerWidth / 2 - 300, y: window.innerHeight / 2 },
+        browser: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
         kasa: { x: window.innerWidth / 2 + 350, y: window.innerHeight / 2 - 100 },
         printer: { x: window.innerWidth / 2 - 350, y: window.innerHeight / 2 - 100 },
         tools: { x: window.innerWidth / 2, y: window.innerHeight - 100 } // Fixed bottom OFFSET
